@@ -251,6 +251,11 @@ static int kucomms_fops_open(struct inode * inodep, struct file * filp)
 	struct kucomms_file_data * pfd;
 	struct task_struct * thread;
 
+	if (filp->private_data != 0) {
+		pr_info("kucomms_fops_open : File already open\n");
+		return -1;
+	}
+
 	pfd = (struct kucomms_file_data *)vmalloc(sizeof(struct kucomms_file_data));
 	if (!pfd) {
 		pr_info("kucomms_fops_open : Error from vmalloc\n");
