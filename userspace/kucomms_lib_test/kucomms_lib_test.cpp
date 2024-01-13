@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <sys/mman.h>
 #include <stdlib.h>
+#include <signal.h>
 
 #include "MessageManager.h"
 
@@ -97,9 +98,21 @@ KuCommsTimerHandler::hlr(std::vector<MessageQueueWriter> & tx_msgq_list)
 
 ///////////////////////////////////////////////////////////////
 
+static bool g_stopped = false;
+
+///////////////////////////////////////////////////////////////
+
+void
+terminate_signal_hanlder(int sig)
+{
+	g_stopped = true;
+}
+
+///////////////////////////////////////////////////////////////
+
 int main(int argc, char ** argv)
 {
-	bool stopped;
+	signal(SIGTERM, terminate_signal_hanlder);
 
 	KuCommsMessageHandler msghlr;
 	KuCommsWorkHandler workhlr;
@@ -108,7 +121,7 @@ int main(int argc, char ** argv)
 	bool ok = MessageManager::run(
 				"/dev/kucomms1",
 				1024*1024,
-				stopped,
+				g_stopped,
 				msghlr,
 				workhlr,
 				timerhlr);
