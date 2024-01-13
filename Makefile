@@ -26,4 +26,12 @@ clean:
 install:
 	cd $(KMOD_KUCOMMS_DIR) ; make install; cd ..
 	cd $(KMOD_KUCOMMS_TEST_DIR) ; make install; cd ..
- 
+
+insmod:
+	modprobe kucomms
+	modprobe kucomms_test
+
+rmmod:
+	rmmod kucomms_test
+	rmmod kucomms
+
