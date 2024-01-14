@@ -152,6 +152,8 @@ message_queue_get_avail_l(
 {
 	const __u64 rd = pMessageQueueHeader->m_rd;
 	const __u64 wr = pMessageQueueHeader->m_wr;
+	if (rd >= queueLength) return(0);
+	if (wr >= queueLength) return(0);
 	if (rd == wr) return(0);
 	if (wr > rd) return(wr - rd);
 	return(queueLength + wr - rd);
@@ -186,6 +188,7 @@ message_queue_add_l(
 	}
 
 	wr = pMessageQueueHeader->m_wr;
+	if (wr >= queueLength) return false;
 	headSize = queueLength - wr;
 	dst = &pMessageQueueHeader->m_queue[wr];
 
@@ -222,6 +225,7 @@ message_queue_add_begin_l(
 	}
 
 	wr = pMessageQueueHeader->m_wr;
+	if (wr >= queueLength) return false;
 	headSize = queueLength - wr;
 	dst = &pMessageQueueHeader->m_queue[wr];
 
@@ -246,6 +250,7 @@ message_queue_add_complete_l(
 	__u64 wr;
 
 	wr = pMessageQueueHeader->m_wr;
+	if (wr >= queueLength) return;
 	wr = (wr + messageSize) % queueLength;
 	pMessageQueueHeader->m_wr = wr;
 }
@@ -308,6 +313,16 @@ message_queue_get_l(
 	__u64 messageSize;
 	__u64 rd = pMessageQueueHeader->m_rd;
 	const __u64 wr = pMessageQueueHeader->m_wr;
+
+	if (rd >= queueLength) {
+		*error = true;
+		return false;
+	}
+
+	if (wr >= queueLength) {
+		*error = true;
+		return false;
+	}
 
 	*error = false;
 
@@ -378,6 +393,14 @@ message_queue_next_length_l(
 	__u64 rd = pMessageQueueHeader->m_rd;
 	const __u64 wr = pMessageQueueHeader->m_wr;
 
+	if (rd >= queueLength) {
+		return false;
+	}
+
+	if (wr >= queueLength) {
+		return false;
+	}
+
 	if (rd == wr) {
 		return false;
 	}
@@ -414,7 +437,16 @@ message_queue_get_begin_l(
 	__u8 * base;
 	__u64 messageSize;
 	__u64 rd = pMessageQueueHeader->m_rd;
+	__u64 rd0 = rd;
 	const __u64 wr = pMessageQueueHeader->m_wr;
+
+	if (rd >= queueLength) {
+		return false;
+	}
+
+	if (wr >= queueLength) {
+		return false;
+	}
 
 	if (rd == wr) {
 		return false;
@@ -433,7 +465,7 @@ message_queue_get_begin_l(
 
 	messageSize = message.m_length + sizeof(struct Message);
 
-	rd = pMessageQueueHeader->m_rd;
+	rd = rd0;
 	headSize = queueLength - rd;
 
 	if (headSize >= messageSize) {
@@ -457,6 +489,7 @@ message_queue_get_complete_l(
  	__u64 messageSize = length + sizeof(struct Message);
 	__u64 rd = pMessageQueueHeader->m_rd;
 
+	if (rd >= queueLength) return;
 	if (length >= queueLength) return;
 
 	rd = (rd + messageSize) % queueLength;
