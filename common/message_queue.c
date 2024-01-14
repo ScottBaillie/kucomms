@@ -20,14 +20,29 @@ message_queue_init(
 ///////////////////////////////////////////////////////////////
 
 __u64
+message_queue_get_length(
+	struct MessageQueueHeader * pMessageQueueHeader)
+{
+	return(pMessageQueueHeader->m_length);
+}
+
+///////////////////////////////////////////////////////////////
+
+__u64
+message_queue_get_queue_length(
+	const __u64 bufferLength)
+{
+	return(bufferLength - sizeof(struct MessageQueueHeader));
+}
+
+///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+
+__u64
 message_queue_get_avail(
 	struct MessageQueueHeader * pMessageQueueHeader)
 {
-	const __u64 rd = pMessageQueueHeader->m_rd;
-	const __u64 wr = pMessageQueueHeader->m_wr;
-	if (rd == wr) return(0);
-	if (wr > rd) return(wr - rd);
-	return(pMessageQueueHeader->m_length + wr - rd);
+	return(message_queue_get_avail_l(pMessageQueueHeader,pMessageQueueHeader->m_length));
 }
 
 ///////////////////////////////////////////////////////////////
@@ -36,16 +51,7 @@ __u64
 message_queue_get_free(
 	struct MessageQueueHeader * pMessageQueueHeader)
 {
-	return(pMessageQueueHeader->m_length - 1 - message_queue_get_avail(pMessageQueueHeader));
-}
-
-///////////////////////////////////////////////////////////////
-
-__u64
-message_queue_get_length(
-	struct MessageQueueHeader * pMessageQueueHeader)
-{
-	return(pMessageQueueHeader->m_length);
+	return(message_queue_get_free_l(pMessageQueueHeader,pMessageQueueHeader->m_length));
 }
 
 ///////////////////////////////////////////////////////////////
@@ -55,33 +61,7 @@ message_queue_add(
 	struct MessageQueueHeader * pMessageQueueHeader,
 	const struct Message *message)
 {
-	__u64 headSize;
-	__u8 * dst;
-	__u8 * base;
-	const __u64 length = pMessageQueueHeader->m_length;
-	const __u64 messageSize = message->m_length + sizeof(struct Message);
-	__u64 wr;
-
-	if (messageSize > message_queue_get_free(pMessageQueueHeader)) {
-		return false;
-	}
-
-	wr = pMessageQueueHeader->m_wr;
-	headSize = length - wr;
-	dst = &pMessageQueueHeader->m_queue[wr];
-
-	if (headSize >= messageSize) {
-		memcpy(dst, message, messageSize);
-	} else {
-		base = &pMessageQueueHeader->m_queue[0];
-		memcpy(dst,  message, headSize);
-		memcpy(base, &((__u8 *)message)[headSize], messageSize-headSize);
-	}
-
-	wr = (wr + messageSize) % length;
-	pMessageQueueHeader->m_wr = wr;
-
-	return true;
+	return(message_queue_add_l(pMessageQueueHeader,pMessageQueueHeader->m_length,message));
 }
 
 ///////////////////////////////////////////////////////////////
@@ -92,27 +72,7 @@ message_queue_add_begin(
 	struct Message ** pmessage,
 	const __u64 dataLength)
 {
-	__u64 headSize;
-	__u8 * dst;
-	const __u64 length = pMessageQueueHeader->m_length;
-	const __u64 messageSize = dataLength + sizeof(struct Message);
-	__u64 wr;
-
-	if (messageSize > message_queue_get_free(pMessageQueueHeader)) {
-		return false;
-	}
-
-	wr = pMessageQueueHeader->m_wr;
-	headSize = length - wr;
-	dst = &pMessageQueueHeader->m_queue[wr];
-
-	if (headSize >= messageSize) {
-		*pmessage = (struct Message *)dst;
-	} else {
-		*pmessage = 0;
-	}
-
-	return true;
+	return(message_queue_add_begin_l(pMessageQueueHeader,pMessageQueueHeader->m_length,pmessage,dataLength));
 }
 
 ///////////////////////////////////////////////////////////////
@@ -122,13 +82,7 @@ message_queue_add_complete(
 	struct MessageQueueHeader * pMessageQueueHeader,
 	const struct Message * message)
 {
-	const __u64 length = pMessageQueueHeader->m_length;
-	const __u64 messageSize = message->m_length + sizeof(struct Message);
-	__u64 wr;
-
-	wr = pMessageQueueHeader->m_wr;
-	wr = (wr + messageSize) % length;
-	pMessageQueueHeader->m_wr = wr;
+	return(message_queue_add_complete_l(pMessageQueueHeader,pMessageQueueHeader->m_length,message));
 }
 
 ///////////////////////////////////////////////////////////////
@@ -143,32 +97,7 @@ message_queue_add_callback(
 	const __u64 bufferLen,
 	bool * error)
 {
-	const __u64 messageSize = dataLength + sizeof(struct Message);
-	struct Message * pmessage = 0;
-	bool ok;
-
-	*error = false;
-
-	ok = message_queue_add_begin(pMessageQueueHeader, &pmessage, dataLength);
-	if (!ok) return false;
-
-	if (pmessage == 0) {
-		if (bufferLen < messageSize) {
-			*error = true;
-			return false;
-		}
-		pmessage = (struct Message *)buffer;
-		ok = hlr(pmessage, dataLength, userData);
-		if (!ok) return false;
-		ok = message_queue_add(pMessageQueueHeader, pmessage);
-		if (!ok) return false;
-	} else {
-		ok = hlr(pmessage, dataLength, userData);
-		if (!ok) return false;
-		message_queue_add_complete(pMessageQueueHeader, pmessage);
-	}
-
-	return true;
+	return(message_queue_add_callback_l(pMessageQueueHeader,pMessageQueueHeader->m_length,hlr,dataLength,userData,buffer,bufferLen,error));
 }
 
 ///////////////////////////////////////////////////////////////
@@ -180,11 +109,202 @@ message_queue_get(
 	const __u64 bufferLen,
 	bool * error)
 {
+	return(message_queue_get_l(pMessageQueueHeader,pMessageQueueHeader->m_length,buffer,bufferLen,error));
+}
+
+///////////////////////////////////////////////////////////////
+
+bool
+message_queue_next_length(
+	struct MessageQueueHeader * pMessageQueueHeader,
+	__u64 * bufferLen)
+{
+	return(message_queue_next_length_l(pMessageQueueHeader,pMessageQueueHeader->m_length,bufferLen));
+}
+
+///////////////////////////////////////////////////////////////
+
+bool
+message_queue_get_begin(
+	struct MessageQueueHeader * pMessageQueueHeader,
+	struct Message ** pmessage)
+{
+	return(message_queue_get_begin_l(pMessageQueueHeader,pMessageQueueHeader->m_length,pmessage));
+}
+
+///////////////////////////////////////////////////////////////
+
+void
+message_queue_get_complete(
+	struct MessageQueueHeader * pMessageQueueHeader,
+	const struct Message * message)
+{
+	return(message_queue_get_complete_l(pMessageQueueHeader,pMessageQueueHeader->m_length,message));
+}
+
+///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+
+__u64
+message_queue_get_avail_l(
+	struct MessageQueueHeader * pMessageQueueHeader,
+	const __u64 queueLength)
+{
+	const __u64 rd = pMessageQueueHeader->m_rd;
+	const __u64 wr = pMessageQueueHeader->m_wr;
+	if (rd == wr) return(0);
+	if (wr > rd) return(wr - rd);
+	return(queueLength + wr - rd);
+}
+
+///////////////////////////////////////////////////////////////
+
+__u64
+message_queue_get_free_l(
+	struct MessageQueueHeader * pMessageQueueHeader,
+	const __u64 queueLength)
+{
+	return(queueLength - 1 - message_queue_get_avail_l(pMessageQueueHeader,queueLength));
+}
+
+///////////////////////////////////////////////////////////////
+
+bool
+message_queue_add_l(
+	struct MessageQueueHeader * pMessageQueueHeader,
+	const __u64 queueLength,
+	const struct Message *message)
+{
+	__u64 headSize;
+	__u8 * dst;
+	__u8 * base;
+	const __u64 messageSize = message->m_length + sizeof(struct Message);
+	__u64 wr;
+
+	if (messageSize > message_queue_get_free_l(pMessageQueueHeader,queueLength)) {
+		return false;
+	}
+
+	wr = pMessageQueueHeader->m_wr;
+	headSize = queueLength - wr;
+	dst = &pMessageQueueHeader->m_queue[wr];
+
+	if (headSize >= messageSize) {
+		memcpy(dst, message, messageSize);
+	} else {
+		base = &pMessageQueueHeader->m_queue[0];
+		memcpy(dst,  message, headSize);
+		memcpy(base, &((__u8 *)message)[headSize], messageSize-headSize);
+	}
+
+	wr = (wr + messageSize) % queueLength;
+	pMessageQueueHeader->m_wr = wr;
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////
+
+bool
+message_queue_add_begin_l(
+	struct MessageQueueHeader * pMessageQueueHeader,
+	const __u64 queueLength,
+	struct Message ** pmessage,
+	const __u64 dataLength)
+{
+	__u64 headSize;
+	__u8 * dst;
+	const __u64 messageSize = dataLength + sizeof(struct Message);
+	__u64 wr;
+
+	if (messageSize > message_queue_get_free_l(pMessageQueueHeader,queueLength)) {
+		return false;
+	}
+
+	wr = pMessageQueueHeader->m_wr;
+	headSize = queueLength - wr;
+	dst = &pMessageQueueHeader->m_queue[wr];
+
+	if (headSize >= messageSize) {
+		*pmessage = (struct Message *)dst;
+	} else {
+		*pmessage = 0;
+	}
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////
+
+void
+message_queue_add_complete_l(
+	struct MessageQueueHeader * pMessageQueueHeader,
+	const __u64 queueLength,
+	const struct Message * message)
+{
+	const __u64 messageSize = message->m_length + sizeof(struct Message);
+	__u64 wr;
+
+	wr = pMessageQueueHeader->m_wr;
+	wr = (wr + messageSize) % queueLength;
+	pMessageQueueHeader->m_wr = wr;
+}
+
+///////////////////////////////////////////////////////////////
+
+bool
+message_queue_add_callback_l(
+	struct MessageQueueHeader * pMessageQueueHeader,
+	const __u64 queueLength,
+	InitMessageFn hlr,
+	const __u64 dataLength,
+	void * userData,
+	__u8 * buffer,
+	const __u64 bufferLen,
+	bool * error)
+{
+	const __u64 messageSize = dataLength + sizeof(struct Message);
+	struct Message * pmessage = 0;
+	bool ok;
+
+	*error = false;
+
+	ok = message_queue_add_begin_l(pMessageQueueHeader, queueLength, &pmessage, dataLength);
+	if (!ok) return false;
+
+	if (pmessage == 0) {
+		if (bufferLen < messageSize) {
+			*error = true;
+			return false;
+		}
+		pmessage = (struct Message *)buffer;
+		ok = hlr(pmessage, dataLength, userData);
+		if (!ok) return false;
+		ok = message_queue_add_l(pMessageQueueHeader, queueLength, pmessage);
+		if (!ok) return false;
+	} else {
+		ok = hlr(pmessage, dataLength, userData);
+		if (!ok) return false;
+		message_queue_add_complete_l(pMessageQueueHeader, queueLength, pmessage);
+	}
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////
+
+bool
+message_queue_get_l(
+	struct MessageQueueHeader * pMessageQueueHeader,
+	const __u64 queueLength,
+	__u8 * buffer,
+	const __u64 bufferLen,
+	bool * error)
+{
 	struct Message * message;
 	__u64 headSize;
 	__u8 * dst;
 	__u8 * base;
-	__u64 length;
 	__u64 messageSize;
 	__u64 rd = pMessageQueueHeader->m_rd;
 	const __u64 wr = pMessageQueueHeader->m_wr;
@@ -200,12 +320,11 @@ message_queue_get(
 		return false;
 	}
 
-	length = pMessageQueueHeader->m_length;
 	base = &pMessageQueueHeader->m_queue[0];
 
 	for (__u32 u0=0; u0<sizeof(struct Message); u0++) {
 		buffer[u0] = base[rd];
-		rd = (rd + 1) % length;
+		rd = (rd + 1) % queueLength;
 	}
 
 	message = (struct Message *)buffer;
@@ -222,7 +341,7 @@ message_queue_get(
 		return false;
 	}
 
-	headSize = length - rd;
+	headSize = queueLength - rd;
 
 	dst = buffer + sizeof(struct Message);
 
@@ -233,7 +352,7 @@ message_queue_get(
 		memcpy(dst+headSize, base,      message->m_length-headSize);
 	}
 
-	rd = (rd + message->m_length) % length;
+	rd = (rd + message->m_length) % queueLength;
 	pMessageQueueHeader->m_rd = rd;
 
 	return true;
@@ -242,14 +361,14 @@ message_queue_get(
 ///////////////////////////////////////////////////////////////
 
 bool
-message_queue_next_length(
+message_queue_next_length_l(
 	struct MessageQueueHeader * pMessageQueueHeader,
+	const __u64 queueLength,
 	__u64 * bufferLen)
 {
 	struct Message message;
 	__u8 * buffer = (__u8 *)&message;
 	__u8 * base;
-	__u64 length;
 	__u64 messageSize;
 	__u64 rd = pMessageQueueHeader->m_rd;
 	const __u64 wr = pMessageQueueHeader->m_wr;
@@ -258,12 +377,11 @@ message_queue_next_length(
 		return false;
 	}
 
-	length = pMessageQueueHeader->m_length;
 	base = &pMessageQueueHeader->m_queue[0];
 
 	for (__u32 u0=0; u0<sizeof(struct Message); u0++) {
 		buffer[u0] = base[rd];
-		rd = (rd + 1) % length;
+		rd = (rd + 1) % queueLength;
 	}
 
 	messageSize = message.m_length + sizeof(struct Message);
@@ -276,15 +394,15 @@ message_queue_next_length(
 ///////////////////////////////////////////////////////////////
 
 bool
-message_queue_get_begin(
+message_queue_get_begin_l(
 	struct MessageQueueHeader * pMessageQueueHeader,
+	const __u64 queueLength,
 	struct Message ** pmessage)
 {
 	struct Message message;
 	__u8 * buffer = (__u8 *)&message;
 	__u64 headSize;
 	__u8 * base;
-	__u64 length;
 	__u64 messageSize;
 	__u64 rd = pMessageQueueHeader->m_rd;
 	const __u64 wr = pMessageQueueHeader->m_wr;
@@ -293,18 +411,17 @@ message_queue_get_begin(
 		return false;
 	}
 
-	length = pMessageQueueHeader->m_length;
 	base = &pMessageQueueHeader->m_queue[0];
 
 	for (__u32 u0=0; u0<sizeof(struct Message); u0++) {
 		buffer[u0] = base[rd];
-		rd = (rd + 1) % length;
+		rd = (rd + 1) % queueLength;
 	}
 
 	messageSize = message.m_length + sizeof(struct Message);
 
 	rd = pMessageQueueHeader->m_rd;
-	headSize = length - rd;
+	headSize = queueLength - rd;
 
 	if (headSize >= messageSize) {
 		*pmessage = (struct Message *)&base[rd];
@@ -318,15 +435,15 @@ message_queue_get_begin(
 ///////////////////////////////////////////////////////////////
 
 void
-message_queue_get_complete(
+message_queue_get_complete_l(
 	struct MessageQueueHeader * pMessageQueueHeader,
+	const __u64 queueLength,
 	const struct Message * message)
 {
-	__u64 length = pMessageQueueHeader->m_length;
 	__u64 messageSize = message->m_length + sizeof(struct Message);
 	__u64 rd = pMessageQueueHeader->m_rd;
 
-	rd = (rd + messageSize) % length;
+	rd = (rd + messageSize) % queueLength;
 	pMessageQueueHeader->m_rd = rd;
 }
 
