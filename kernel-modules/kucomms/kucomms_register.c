@@ -58,6 +58,7 @@ kucomms_callback_list_init(void)
 		cblist[u0].timerhlr = 0;
 		cblist[u0].userData = 0;
 		cblist[u0].filename_len = 0;
+		cblist[u0].open = false;
 	}
 }
 
@@ -79,6 +80,33 @@ kucomms_find_callback_data(const char* name, __u32 len)
 		return &cblist[u0];
 	}
 	return 0;
+}
+
+/**********************************************************/
+
+struct kucomms_callback_data *
+kucomms_find_and_open(const char* name, __u32 len, bool * open)
+{
+	struct kucomms_callback_data * pcbdata;
+	*open = false;
+	pcbdata = kucomms_find_callback_data(name, len);
+	if (pcbdata) {
+		*open = pcbdata->open;
+		pcbdata->open = true;
+	}
+	return pcbdata;
+}
+
+/**********************************************************/
+
+void
+kucomms_find_and_close(const char* name, __u32 len)
+{
+	struct kucomms_callback_data * pcbdata;
+	pcbdata = kucomms_find_callback_data(name, len);
+	if (pcbdata) {
+		pcbdata->open = false;
+	}
 }
 
 /**********************************************************/
@@ -115,17 +143,17 @@ kucomms_register(
 bool
 kucomms_unregister(const char* name, __u32 len)
 {
-
 	struct kucomms_callback_data * pcbdata = kucomms_find_callback_data(name,len);
 	if (pcbdata) {
+		if (pcbdata->open) return false;
 		pcbdata->msghlr = 0;
 		pcbdata->workhlr = 0;
 		pcbdata->timerhlr = 0;
 		pcbdata->userData = 0;
 		pcbdata->filename_len = 0;
-		return true;
+		pcbdata->open = false;
 	}
-	return false;
+	return true;
 }
 
 /**********************************************************/

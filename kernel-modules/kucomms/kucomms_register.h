@@ -16,6 +16,7 @@ struct kucomms_callback_data
 	void * userData;
 	char filename[KUCOMMS_FNAME_SIZE];
 	__u32 filename_len;
+	bool open;
 };
 
 /**********************************************************/
@@ -34,7 +35,10 @@ struct kucomms_file_data
 /**********************************************************/
 
 void kucomms_callback_list_init(void);
-struct kucomms_callback_data * kucomms_find_callback_data(const char* name, __u32 len);
+
+struct kucomms_callback_data * kucomms_find_and_open(const char* name, __u32 len, bool * open);
+
+void kucomms_find_and_close(const char* name, __u32 len);
 
 bool
 kucomms_register(

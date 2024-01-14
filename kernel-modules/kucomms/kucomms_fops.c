@@ -250,9 +250,17 @@ static int kucomms_fops_open(struct inode * inodep, struct file * filp)
 	struct kucomms_callback_data * pcbdata;
 	struct kucomms_file_data * pfd;
 	struct task_struct * thread;
+	bool open;
 
-	if (filp->private_data != 0) {
-		pr_info("kucomms_fops_open : File already open\n");
+	pcbdata = kucomms_find_and_open(filp->f_path.dentry->d_name.name, filp->f_path.dentry->d_name.len, &open);
+
+	if (pcbdata == 0) {
+		pr_info("kucomms_fops_open : There are no registered callbacks\n");
+		return -1;
+	}
+
+	if (open) {
+		pr_info("kucomms_fops_open : Device file already open\n");
 		return -1;
 	}
 
@@ -280,7 +288,6 @@ static int kucomms_fops_open(struct inode * inodep, struct file * filp)
 	pfd->cbdata.timerhlr = 0;
 	pfd->cbdata.userData = 0;
 
-	pcbdata = kucomms_find_callback_data(filp->f_path.dentry->d_name.name, filp->f_path.dentry->d_name.len);
 	if (pcbdata) pfd->cbdata = *pcbdata;
 
 	pfd->rx_msgq = 0;
@@ -306,6 +313,8 @@ static int kucomms_fops_flush(struct file * filp, fl_owner_t id)
 static int kucomms_fops_release(struct inode * inodep, struct file * filp)
 {
 	struct kucomms_file_data * pfd;
+
+	kucomms_find_and_close(filp->f_path.dentry->d_name.name, filp->f_path.dentry->d_name.len);
 
 	pr_info("kucomms_fops_release : Entered\n");
 

@@ -8,6 +8,8 @@
 #include <linux/vmalloc.h>
 #include <linux/module.h>
 #include <linux/printk.h>
+#include <linux/delay.h>
+#include <linux/time.h>
 
 /**********************************************************/
 
@@ -95,9 +97,14 @@ static int __init init_kucomms_test(void)
 static void __exit exit_kucomms_test(void)
 {
 	bool ok;
-	pr_info("exit_kucomms_test : Exiting\n");
 
-	ok = kucomms_unregister("kucomms", 7);
+	while (true) {
+		ok = kucomms_unregister("kucomms", 7);
+		if (ok) break;
+		usleep_range(1000000,1500000);
+	}
+
+	pr_info("exit_kucomms_test : Exiting\n");
 }
 
 /**********************************************************/
