@@ -161,6 +161,10 @@ static long kucomms_fops_compat_ioctl(struct file *, unsigned int, unsigned long
 
 ///////////////////////////////////////////////////////////////
 
+#define KUCOMMS_MAX_MEM_ALLOC_SIZE (1024*1024*1024)
+
+///////////////////////////////////////////////////////////////
+
 //
 // SAB : this gets called when userspace calls mmap
 //
@@ -172,6 +176,11 @@ static int kucomms_fops_mmap(struct file *filp, struct vm_area_struct *vma)
 	void * vaddr;
 	struct kucomms_file_data * pfd;
 	unsigned long len = vma->vm_end - vma->vm_start;
+
+	if (len > KUCOMMS_MAX_MEM_ALLOC_SIZE) {
+		pr_err("kucomms_fops_mmap : Maximum mem allocation size exceeded\n");
+		return -EIO;
+	}
 
 	vaddr = vmalloc_user(len);
 
