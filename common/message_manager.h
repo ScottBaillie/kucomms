@@ -16,7 +16,7 @@
 
 ///////////////////////////////////////////////////////////////
 
-typedef bool (*MessageHandler_C)(struct Message * message, MessageQueueHeaderPtr tx_msgq, void * userData);
+typedef bool (*MessageHandler_C)(struct Message * message, MessageQueueHeaderPtr tx_msgq, const __u64 tx_msgq_queueLength, void * userData);
 
 // Returning false means sleep, return true means dont sleep.
 typedef bool (*WorkHandler_C)(void * userData);

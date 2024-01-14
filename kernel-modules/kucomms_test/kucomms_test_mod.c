@@ -27,14 +27,17 @@ static struct kucomms_test_data g_data;
 /**********************************************************/
 
 static bool
-kucomms_test_message_hlr(struct Message * message, MessageQueueHeaderPtr tx_msgq, void * userData)
+kucomms_test_message_hlr(struct Message * message, MessageQueueHeaderPtr tx_msgq, const __u64 tx_msgq_queueLength, void * userData)
 {
 	pr_info("kucomms_test_message_hlr : Entered\n");
 
-	struct kucomms_file_data * pfd = (struct kucomms_file_data *)userData;
-	struct kucomms_test_data * pdata = (struct kucomms_test_data*)pfd->cbdata.userData;
+//	struct kucomms_file_data * pfd = (struct kucomms_file_data *)userData;
+//	struct kucomms_test_data * pdata = (struct kucomms_test_data*)pfd->cbdata.userData;
 
-	pdata->var1 = 0;
+
+	//  send the message received back to the sender
+	message_queue_add_l(tx_msgq, tx_msgq_queueLength, message);
+
 
 	return true;
 }
@@ -55,11 +58,8 @@ kucomms_test_message_hlr(struct Message * message, MessageQueueHeaderPtr tx_msgq
 static bool
 kucomms_test_work_hlr(void * userData)
 {
-	struct kucomms_file_data * pfd = (struct kucomms_file_data *)userData;
-	struct kucomms_test_data * pdata = (struct kucomms_test_data*)pfd->cbdata.userData;
-
-	pdata->var2 = 0;
-
+//	struct kucomms_file_data * pfd = (struct kucomms_file_data *)userData;
+//	struct kucomms_test_data * pdata = (struct kucomms_test_data*)pfd->cbdata.userData;
 	return false;
 }
 
@@ -68,10 +68,8 @@ kucomms_test_work_hlr(void * userData)
 static void
 kucomms_test_timer_hlr(void * userData)
 {
-	struct kucomms_file_data * pfd = (struct kucomms_file_data *)userData;
-	struct kucomms_test_data * pdata = (struct kucomms_test_data*)pfd->cbdata.userData;
-
-	pdata->var3 = 0;
+//	struct kucomms_file_data * pfd = (struct kucomms_file_data *)userData;
+//	struct kucomms_test_data * pdata = (struct kucomms_test_data*)pfd->cbdata.userData;
 }
 
 /**********************************************************/

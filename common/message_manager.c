@@ -73,11 +73,13 @@ message_manager_run(
 	bool ok;
 	bool error = false;
 	struct MessageQueueHeader * rx_msgq;
+	struct MessageQueueHeader * tx_msgq;
 	struct Message * pmessage;
 	__u8 * buffer;
 	__u64 avail;
 	__u64 counter = 0;
 	__u64 rx_msgq_queueLength;
+	__u64 tx_msgq_queueLength;
 
 #if KERNEL_BUILD
 	buffer = vmalloc(bufferLen);
@@ -95,7 +97,9 @@ message_manager_run(
 
 		for (__u32 u0=0;u0<pMessageManager->msgq_array_length;u0++) {
 			rx_msgq = pMessageManager->rx_msgq_array[u0];
+			tx_msgq = pMessageManager->tx_msgq_array[u0];
 			rx_msgq_queueLength = pMessageManager->rx_msgq_len_array[u0];
+			tx_msgq_queueLength = pMessageManager->tx_msgq_len_array[u0];
 			ok = message_queue_get_begin_l(rx_msgq, rx_msgq_queueLength, &pmessage);
 			if (!ok) continue;
 			if (pmessage == 0) {
@@ -105,11 +109,13 @@ message_manager_run(
 				pmessage = (struct Message *)buffer;
 
 				ok = pMessageManager->msghlr(pmessage,
-							pMessageManager->tx_msgq_array[u0],
+							tx_msgq,
+							tx_msgq_queueLength,
 							pMessageManager->userData);
 			} else {
 				ok = pMessageManager->msghlr(pmessage,
-							pMessageManager->tx_msgq_array[u0],
+							tx_msgq,
+							tx_msgq_queueLength,
 							pMessageManager->userData);
 
 				message_queue_get_complete_l(rx_msgq, rx_msgq_queueLength, pmessage);

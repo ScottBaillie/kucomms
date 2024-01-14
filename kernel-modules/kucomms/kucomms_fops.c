@@ -43,11 +43,11 @@
 /**********************************************************/
 
 bool
-kucomms_message_hlr(struct Message * message, MessageQueueHeaderPtr tx_msgq, void * userData)
+kucomms_message_hlr(struct Message * message, MessageQueueHeaderPtr tx_msgq, const __u64 tx_msgq_queueLength, void * userData)
 {
 	bool ok = false;
 	struct kucomms_file_data * pfd = (struct kucomms_file_data *)userData;
-	if (pfd->cbdata.msghlr) ok = pfd->cbdata.msghlr(message, tx_msgq, userData);
+	if (pfd->cbdata.msghlr) ok = pfd->cbdata.msghlr(message, tx_msgq, tx_msgq_queueLength, userData);
 	return ok;
 }
 
