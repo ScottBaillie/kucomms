@@ -7,6 +7,9 @@
 #include <linux/kernel.h>
 #include <linux/printk.h>
 #include <linux/vmalloc.h>
+#include <linux/delay.h>
+#include <linux/mm.h>
+#include <linux/mutex.h>
 
 //#include <linux/errno.h>
 //#include <linux/mmdebug.h>
@@ -17,8 +20,6 @@
 //#include <linux/rbtree.h>
 //#include <linux/atomic.h>
 //#include <linux/debug_locks.h>
-#include <linux/delay.h>
-#include <linux/mm.h>
 //#include <linux/mm_types.h>
 //#include <linux/mmap_lock.h>
 //#include <linux/range.h>
@@ -47,6 +48,8 @@
 
 static struct kucomms_callback_data cblist[KUCOMMS_CBLIST_SIZE];
 
+struct mutex cblist_mutex;
+
 /**********************************************************/
 
 void
@@ -60,6 +63,8 @@ kucomms_callback_list_init(void)
 		cblist[u0].filename_len = 0;
 		cblist[u0].open = false;
 	}
+
+	mutex_init(&cblist_mutex);
 }
 
 /**********************************************************/
@@ -87,6 +92,10 @@ kucomms_find_callback_data(const char* name, __u32 len)
 struct kucomms_callback_data *
 kucomms_find_and_open(const char* name, __u32 len, bool * open)
 {
+	int ret = mutex_lock_interruptible(&cblist_mutex);
+	if (ret == -EINTR) { // Deal with signal
+	}
+
 	struct kucomms_callback_data * pcbdata;
 	*open = false;
 	pcbdata = kucomms_find_callback_data(name, len);
@@ -94,6 +103,9 @@ kucomms_find_and_open(const char* name, __u32 len, bool * open)
 		*open = pcbdata->open;
 		pcbdata->open = true;
 	}
+
+	mutex_unlock(&cblist_mutex);
+
 	return pcbdata;
 }
 
@@ -102,11 +114,17 @@ kucomms_find_and_open(const char* name, __u32 len, bool * open)
 void
 kucomms_find_and_close(const char* name, __u32 len)
 {
+	int ret = mutex_lock_interruptible(&cblist_mutex);
+	if (ret == -EINTR) { // Deal with signal
+	}
+
 	struct kucomms_callback_data * pcbdata;
 	pcbdata = kucomms_find_callback_data(name, len);
 	if (pcbdata) {
 		pcbdata->open = false;
 	}
+
+	mutex_unlock(&cblist_mutex);
 }
 
 /**********************************************************/
@@ -120,9 +138,13 @@ kucomms_register(
 	TimerHandler_C timerhlr,
 	void * userData)
 {
-	if ((name==0) || (len==0)) return false;
-	if ((msghlr==0) || (workhlr==0) || (timerhlr==0)) return false;
-	if (kucomms_find_callback_data(name,len)!=0) return(false);
+	int ret = mutex_lock_interruptible(&cblist_mutex);
+	if (ret == -EINTR) { // Deal with signal
+	}
+
+	if ((name==0) || (len==0)) goto exit;
+	if ((msghlr==0) || (workhlr==0) || (timerhlr==0)) goto exit;
+	if (kucomms_find_callback_data(name,len)!=0) goto exit;
 
 	for (__u32 u0=0; u0<KUCOMMS_CBLIST_SIZE; u0++) {
 		if (cblist[u0].filename_len != 0) continue;
@@ -133,8 +155,13 @@ kucomms_register(
 		if (len > KUCOMMS_FNAME_SIZE) len = KUCOMMS_FNAME_SIZE;
 		cblist[u0].filename_len = len;
 		memcpy(cblist[u0].filename, name, len);
+		mutex_unlock(&cblist_mutex);
 		return true;
 	}
+
+exit:
+	mutex_unlock(&cblist_mutex);
+
 	return false;
 }
 
@@ -143,9 +170,16 @@ kucomms_register(
 bool
 kucomms_unregister(const char* name, __u32 len)
 {
+	int ret = mutex_lock_interruptible(&cblist_mutex);
+	if (ret == -EINTR) { // Deal with signal
+	}
+
 	struct kucomms_callback_data * pcbdata = kucomms_find_callback_data(name,len);
 	if (pcbdata) {
-		if (pcbdata->open) return false;
+		if (pcbdata->open) {
+			mutex_unlock(&cblist_mutex);
+			return false;
+		}
 		pcbdata->msghlr = 0;
 		pcbdata->workhlr = 0;
 		pcbdata->timerhlr = 0;
@@ -153,6 +187,9 @@ kucomms_unregister(const char* name, __u32 len)
 		pcbdata->filename_len = 0;
 		pcbdata->open = false;
 	}
+
+	mutex_unlock(&cblist_mutex);
+
 	return true;
 }
 
