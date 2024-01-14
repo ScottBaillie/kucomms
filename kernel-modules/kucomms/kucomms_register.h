@@ -14,6 +14,7 @@ struct kucomms_callback_data
 	WorkHandler_C workhlr;
 	TimerHandler_C timerhlr;
 	void * userData;
+	struct Message * message;
 	char filename[KUCOMMS_FNAME_SIZE];
 	__u32 filename_len;
 	bool open;

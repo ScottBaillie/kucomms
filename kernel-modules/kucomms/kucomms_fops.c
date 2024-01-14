@@ -43,11 +43,20 @@
 /**********************************************************/
 
 bool
-kucomms_message_hlr(struct Message * message, MessageQueueHeaderPtr tx_msgq, const __u64 tx_msgq_queueLength, void * userData)
+kucomms_message_hlr(struct Message * message, MessageQueueHeaderPtr tx_msgq, const __u64 rx_msgq_queueLength, const __u64 tx_msgq_queueLength, void * userData)
 {
 	bool ok = false;
+	__u64 length = message->m_length;
+
+	if (length >= rx_msgq_queueLength) {
+		return false;
+	}
+
 	struct kucomms_file_data * pfd = (struct kucomms_file_data *)userData;
-	if (pfd->cbdata.msghlr) ok = pfd->cbdata.msghlr(message, tx_msgq, tx_msgq_queueLength, userData);
+
+	memcpy(pfd->cbdata.message,message,length);
+
+	if (pfd->cbdata.msghlr) ok = pfd->cbdata.msghlr(pfd->cbdata.message, tx_msgq, rx_msgq_queueLength, tx_msgq_queueLength, userData);
 	return ok;
 }
 
@@ -174,8 +183,16 @@ static int kucomms_fops_mmap(struct file *filp, struct vm_area_struct *vma)
 	int ret;
 	void * userData;
 	void * vaddr;
+	struct Message * message;
 	struct kucomms_file_data * pfd;
 	unsigned long len = vma->vm_end - vma->vm_start;
+
+	pfd = (struct kucomms_file_data *)filp->private_data;
+
+	if (pfd->vaddr) {
+		pr_err("kucomms_fops_mmap : Memory cannot be mapped more than once\n");
+		return -EIO;
+	}
 
 	if (len > KUCOMMS_MAX_MEM_ALLOC_SIZE) {
 		pr_err("kucomms_fops_mmap : Maximum mem allocation size exceeded\n");
@@ -197,10 +214,13 @@ static int kucomms_fops_mmap(struct file *filp, struct vm_area_struct *vma)
 		return -EIO;
 	}
 
-	pfd = (struct kucomms_file_data *)filp->private_data;
+	message = (struct Message *)vmalloc(message_queue_get_queue_length(len/2));
+	if (!message) {
+		pr_info("kucomms_fops_mmap : Error from vmalloc\n");
+		vfree(vaddr);
+		return -EIO;
+	}
 
-	pfd->vaddr = vaddr;
-	pfd->vaddr_len = len;
 	pfd->rx_msgq = (MessageQueueHeaderPtr)vaddr;
 	pfd->tx_msgq = (MessageQueueHeaderPtr)((__u8*)vaddr+(len/2));
 
@@ -208,6 +228,7 @@ static int kucomms_fops_mmap(struct file *filp, struct vm_area_struct *vma)
 
 	if (!ok) {
 		pr_err("kucomms_fops_mmap : Error from message_queue_init\n");
+		vfree(message);
 		vfree(vaddr);
 		return -EIO;
 	}
@@ -216,6 +237,7 @@ static int kucomms_fops_mmap(struct file *filp, struct vm_area_struct *vma)
 
 	if (!ok) {
 		pr_err("kucomms_fops_mmap : Error from message_queue_init\n");
+		vfree(message);
 		vfree(vaddr);
 		return -EIO;
 	}
@@ -231,6 +253,7 @@ static int kucomms_fops_mmap(struct file *filp, struct vm_area_struct *vma)
 
 	if (!ok) {
 		pr_err("kucomms_fops_mmap : Error from message_manager_init\n");
+		vfree(message);
 		vfree(vaddr);
 		return -EIO;
 	}
@@ -244,9 +267,14 @@ static int kucomms_fops_mmap(struct file *filp, struct vm_area_struct *vma)
 
 	if (!ok) {
 		pr_err("kucomms_fops_mmap : Error from message_manager_add_msgq\n");
+		vfree(message);
 		vfree(vaddr);
 		return -EIO;
 	}
+
+	pfd->vaddr = vaddr;
+	pfd->vaddr_len = len;
+	pfd->cbdata.message = message;
 
 	wake_up_process(pfd->thread);
 
@@ -263,6 +291,7 @@ static int kucomms_fops_open(struct inode * inodep, struct file * filp)
 	struct task_struct * thread;
 	bool open;
 
+
 	pcbdata = kucomms_find_and_open(filp->f_path.dentry->d_name.name, filp->f_path.dentry->d_name.len, &open);
 
 	if (pcbdata == 0) {
@@ -278,12 +307,14 @@ static int kucomms_fops_open(struct inode * inodep, struct file * filp)
 	pfd = (struct kucomms_file_data *)vmalloc(sizeof(struct kucomms_file_data));
 	if (!pfd) {
 		pr_info("kucomms_fops_open : Error from vmalloc\n");
+		kucomms_find_and_close(filp->f_path.dentry->d_name.name, filp->f_path.dentry->d_name.len);
 		return -1;
 	}
 
 	thread = kthread_create(kucomms_thread, pfd, "KThread kucomms");
 	if (IS_ERR(thread)) {
 		pr_info("kucomms_fops_open : Error from kthread_create\n");
+		kucomms_find_and_close(filp->f_path.dentry->d_name.name, filp->f_path.dentry->d_name.len);
 		vfree(pfd);
 		return -1;
 	}
@@ -298,6 +329,7 @@ static int kucomms_fops_open(struct inode * inodep, struct file * filp)
 	pfd->cbdata.workhlr = 0;
 	pfd->cbdata.timerhlr = 0;
 	pfd->cbdata.userData = 0;
+	pfd->cbdata.message = 0;
 
 	if (pcbdata) pfd->cbdata = *pcbdata;
 
@@ -332,6 +364,8 @@ static int kucomms_fops_release(struct inode * inodep, struct file * filp)
 	pfd = (struct kucomms_file_data *)filp->private_data;
 
 	kthread_stop(pfd->thread);
+
+	if (pfd->cbdata.message) vfree(pfd->cbdata.message);
 
 	if (pfd->vaddr) vfree(pfd->vaddr);
 

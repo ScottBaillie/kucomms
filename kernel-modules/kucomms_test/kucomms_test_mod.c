@@ -27,7 +27,7 @@ static struct kucomms_test_data g_data;
 /**********************************************************/
 
 static bool
-kucomms_test_message_hlr(struct Message * message, MessageQueueHeaderPtr tx_msgq, const __u64 tx_msgq_queueLength, void * userData)
+kucomms_test_message_hlr(struct Message * message, MessageQueueHeaderPtr tx_msgq, const __u64 rx_msgq_queueLength, const __u64 tx_msgq_queueLength, void * userData)
 {
 	pr_info("kucomms_test_message_hlr : Entered\n");
 

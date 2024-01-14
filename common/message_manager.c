@@ -110,11 +110,13 @@ message_manager_run(
 
 				ok = pMessageManager->msghlr(pmessage,
 							tx_msgq,
+							rx_msgq_queueLength,
 							tx_msgq_queueLength,
 							pMessageManager->userData);
 			} else {
 				ok = pMessageManager->msghlr(pmessage,
 							tx_msgq,
+							rx_msgq_queueLength,
 							tx_msgq_queueLength,
 							pMessageManager->userData);
 
