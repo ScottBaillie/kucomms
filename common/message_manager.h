@@ -29,6 +29,8 @@ struct MessageManagerStruct
 {
 	MessageQueueHeaderPtr		rx_msgq_array[MSGMGR_MSGQARRAY_SIZE];
 	MessageQueueHeaderPtr		tx_msgq_array[MSGMGR_MSGQARRAY_SIZE];
+	__u64				rx_msgq_len_array[MSGMGR_MSGQARRAY_SIZE];
+	__u64				tx_msgq_len_array[MSGMGR_MSGQARRAY_SIZE];
 	__u32				msgq_array_length;
 	MessageHandler_C		msghlr;
 	WorkHandler_C			workhlr;
@@ -50,7 +52,9 @@ bool message_manager_init(
 bool message_manager_add_msgq(
 	struct MessageManagerStruct * pMessageManager,
 	MessageQueueHeaderPtr rx_msgq,
-	MessageQueueHeaderPtr tx_msgq);
+	MessageQueueHeaderPtr tx_msgq,
+	const __u64 rx_msgq_queueLength,
+	const __u64 tx_msgq_queueLength);
 
 ///////////////////////////////////////////////////////////////
 

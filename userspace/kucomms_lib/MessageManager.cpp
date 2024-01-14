@@ -86,7 +86,9 @@ MessageManager::MessageManager(
 		ok = message_manager_add_msgq(
 			&m_msgmgr,
 			m_rx_msgq[u0].get_mq(),
-			m_tx_msgq[u0].get_mq());
+			m_tx_msgq[u0].get_mq(),
+			m_rx_msgq[u0].get_length(),
+			m_tx_msgq[u0].get_length());
 
 		if (!ok) return;
 

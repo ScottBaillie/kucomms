@@ -229,7 +229,9 @@ static int kucomms_fops_mmap(struct file *filp, struct vm_area_struct *vma)
 	ok = message_manager_add_msgq(
 		&pfd->msgmgr,
 		pfd->rx_msgq,
-		pfd->tx_msgq);
+		pfd->tx_msgq,
+		message_queue_get_queue_length(len/2),
+		message_queue_get_queue_length(len/2));
 
 	if (!ok) {
 		pr_err("kucomms_fops_mmap : Error from message_manager_add_msgq\n");

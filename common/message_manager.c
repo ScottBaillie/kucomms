@@ -33,6 +33,8 @@ message_manager_init(
 	for (__u32 u0=0;u0<MSGMGR_MSGQARRAY_SIZE;u0++) {
 		pMessageManager->rx_msgq_array[u0] = 0;
 		pMessageManager->tx_msgq_array[u0] = 0;
+		pMessageManager->rx_msgq_len_array[u0] = 0;
+		pMessageManager->tx_msgq_len_array[u0] = 0;
 	}
 	return true;
 }
@@ -43,12 +45,17 @@ bool
 message_manager_add_msgq(
 	struct MessageManagerStruct * pMessageManager,
 	MessageQueueHeaderPtr rx_msgq,
-	MessageQueueHeaderPtr tx_msgq)
+	MessageQueueHeaderPtr tx_msgq,
+	const __u64 rx_msgq_queueLength,
+	const __u64 tx_msgq_queueLength)
 {
 	if (pMessageManager->msgq_array_length == MSGMGR_MSGQARRAY_SIZE) return false;
 
 	pMessageManager->rx_msgq_array[pMessageManager->msgq_array_length] = rx_msgq;
 	pMessageManager->tx_msgq_array[pMessageManager->msgq_array_length] = tx_msgq;
+
+	pMessageManager->rx_msgq_len_array[pMessageManager->msgq_array_length] = rx_msgq_queueLength;
+	pMessageManager->tx_msgq_len_array[pMessageManager->msgq_array_length] = tx_msgq_queueLength;
 
 	pMessageManager->msgq_array_length++;
 
@@ -70,6 +77,7 @@ message_manager_run(
 	__u8 * buffer;
 	__u64 avail;
 	__u64 counter = 0;
+	__u64 rx_msgq_queueLength;
 
 #if KERNEL_BUILD
 	buffer = vmalloc(bufferLen);
@@ -87,10 +95,11 @@ message_manager_run(
 
 		for (__u32 u0=0;u0<pMessageManager->msgq_array_length;u0++) {
 			rx_msgq = pMessageManager->rx_msgq_array[u0];
-			ok = message_queue_get_begin(rx_msgq, &pmessage);
+			rx_msgq_queueLength = pMessageManager->rx_msgq_len_array[u0];
+			ok = message_queue_get_begin_l(rx_msgq, rx_msgq_queueLength, &pmessage);
 			if (!ok) continue;
 			if (pmessage == 0) {
-				ok = message_queue_get(rx_msgq, buffer, bufferLen, &error);
+				ok = message_queue_get_l(rx_msgq, rx_msgq_queueLength, buffer, bufferLen, &error);
 				if (error) break;
 				if (!ok) continue;
 				pmessage = (struct Message *)buffer;
@@ -103,10 +112,10 @@ message_manager_run(
 							pMessageManager->tx_msgq_array[u0],
 							pMessageManager->userData);
 
-				message_queue_get_complete(rx_msgq, pmessage);
+				message_queue_get_complete_l(rx_msgq, rx_msgq_queueLength, pmessage);
 			}
 
-			avail += message_queue_get_avail(rx_msgq);
+			avail += message_queue_get_avail_l(rx_msgq, rx_msgq_queueLength);
 
 			counter += 1;
 
