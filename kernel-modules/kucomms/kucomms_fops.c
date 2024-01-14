@@ -47,14 +47,17 @@ kucomms_message_hlr(struct Message * message, MessageQueueHeaderPtr tx_msgq, con
 {
 	bool ok = false;
 	__u64 length = message->m_length;
+	__u64 messageSize = length + sizeof(struct Message);
 
-	if (length >= rx_msgq_queueLength) {
+	if (messageSize >= rx_msgq_queueLength) {
 		return false;
 	}
 
 	struct kucomms_file_data * pfd = (struct kucomms_file_data *)userData;
 
-	memcpy(pfd->cbdata.message,message,length);
+	memcpy(pfd->cbdata.message,message,messageSize);
+
+	pfd->cbdata.message->m_length = length;
 
 	if (pfd->cbdata.msghlr) ok = pfd->cbdata.msghlr(pfd->cbdata.message, tx_msgq, rx_msgq_queueLength, tx_msgq_queueLength, userData);
 	return ok;

@@ -344,7 +344,9 @@ message_queue_get_l(
 
 	message = (struct Message *)buffer;
 
-	if (message->m_length >= queueLength) {
+	messageSize = message->m_length + sizeof(struct Message);
+
+	if (messageSize >= queueLength) {
 		*error = true;
 		return false;
 	}
@@ -353,8 +355,6 @@ message_queue_get_l(
 		pMessageQueueHeader->m_rd = rd;
 		return true;
 	}
-
-	messageSize = message->m_length + sizeof(struct Message);
 
 	if (bufferLen < messageSize) {
 		*error = true;
@@ -412,11 +412,11 @@ message_queue_next_length_l(
 		rd = (rd + 1) % queueLength;
 	}
 
-	if (message.m_length >= queueLength) {
+	messageSize = message.m_length + sizeof(struct Message);
+
+	if (messageSize >= queueLength) {
 		return false;
 	}
-
-	messageSize = message.m_length + sizeof(struct Message);
 
 	*bufferLen = messageSize;
 
@@ -459,11 +459,11 @@ message_queue_get_begin_l(
 		rd = (rd + 1) % queueLength;
 	}
 
-	if (message.m_length >= queueLength) {
+	messageSize = message.m_length + sizeof(struct Message);
+
+	if (messageSize >= queueLength) {
 		return false;
 	}
-
-	messageSize = message.m_length + sizeof(struct Message);
 
 	rd = rd0;
 	headSize = queueLength - rd;
@@ -490,7 +490,7 @@ message_queue_get_complete_l(
 	__u64 rd = pMessageQueueHeader->m_rd;
 
 	if (rd >= queueLength) return;
-	if (length >= queueLength) return;
+	if (messageSize >= queueLength) return;
 
 	rd = (rd + messageSize) % queueLength;
 	pMessageQueueHeader->m_rd = rd;
