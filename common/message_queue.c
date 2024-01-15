@@ -4,6 +4,20 @@
 
 ///////////////////////////////////////////////////////////////
 
+__u64
+message_get_message_length(const __u64 dataLength)
+{
+	return(dataLength + sizeof(struct Message));
+}
+
+__u64
+message_get_data_length(const __u64 messageLength)
+{
+	return(messageLength - sizeof(struct Message));
+}
+
+///////////////////////////////////////////////////////////////
+
 bool
 message_queue_init(
 	struct MessageQueueHeader * pMessageQueueHeader,
@@ -33,6 +47,13 @@ message_queue_get_queue_length(
 	const __u64 bufferLength)
 {
 	return(bufferLength - sizeof(struct MessageQueueHeader));
+}
+
+__u64
+message_queue_get_buffer_length(
+	const __u64 queueLength)
+{
+	return(queueLength + sizeof(struct MessageQueueHeader));
 }
 
 ///////////////////////////////////////////////////////////////

@@ -53,6 +53,12 @@ typedef bool (*InitMessageFn)(struct Message * message, const __u64 dataLength, 
 
 ///////////////////////////////////////////////////////////////
 
+__u64 message_get_message_length(const __u64 dataLength);
+
+__u64 message_get_data_length(const __u64 messageLength);
+
+///////////////////////////////////////////////////////////////
+
 bool message_queue_init(
 	struct MessageQueueHeader * pMessageQueueHeader,
 	const __u64 bufferLength);
@@ -62,6 +68,9 @@ __u64 message_queue_get_length(
 
 __u64 message_queue_get_queue_length(
 	const __u64 bufferLength);
+
+__u64 message_queue_get_buffer_length(
+	const __u64 queueLength);
 
 ///////////////////////////////////////////////////////////////
 
