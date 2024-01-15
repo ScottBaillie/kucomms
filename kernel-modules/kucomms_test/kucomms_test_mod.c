@@ -74,18 +74,24 @@ kucomms_test_timer_hlr(void * userData)
 
 /**********************************************************/
 
+const char * devname = "kucomms_test";
+
+/**********************************************************/
+
 static int __init init_kucomms_test(void)
 {
 	bool ok;
 	pr_info("init_kucomms_test : Entered\n");
 
 	ok = kucomms_register(
-		"kucomms1",
-		8,
+		devname,
+		strlen(devname),
 		kucomms_test_message_hlr,
 		kucomms_test_work_hlr,
 		kucomms_test_timer_hlr,
 		&g_data);
+
+	if (!ok) return -ENODEV;
 
 	return 0;
 }
@@ -97,7 +103,7 @@ static void __exit exit_kucomms_test(void)
 	bool ok;
 
 	while (true) {
-		ok = kucomms_unregister("kucomms", 7);
+		ok = kucomms_unregister(devname, strlen(devname));
 		if (ok) break;
 		usleep_range(1000000,1500000);
 	}
