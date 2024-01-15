@@ -29,9 +29,11 @@ install:
 
 insmod:
 	modprobe kucomms
+	echo kucomms_test > /sys/devices/virtual/kucomms/kucomms/create_device
 	modprobe kucomms_test
 
 rmmod:
 	rmmod kucomms_test
+	echo kucomms_test > /sys/devices/virtual/kucomms/kucomms/remove_device
 	rmmod kucomms
 
