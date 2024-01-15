@@ -39,8 +39,6 @@ ssize_t create_device_show(struct device *dev, struct device_attribute *attr, ch
 // show() or store() can always return errors. 
 ssize_t create_device_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
 {
-	pr_info("create_device_store : Entered : %s\n", buf);
-
 	bool ok = kucomms_char_device_create(buf, strlen(buf));
 	if (!ok) return(-1);
 
@@ -54,8 +52,6 @@ ssize_t remove_device_show(struct device *dev, struct device_attribute *attr, ch
 
 ssize_t remove_device_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
 {
-	pr_info("create_device_store : Entered : %s\n", buf);
-
 	bool ok = kucomms_char_device_remove(buf, strlen(buf));
 	if (!ok) return(-1);
 
@@ -88,8 +84,6 @@ static int __init init_kucomms(void)
 {
 	struct device * dev;
 	int ret;
-
-	pr_info("init_kucomms : Entered\n");
 
 	major = platform_device_register(&kucomms_platform_device);
 
@@ -128,8 +122,6 @@ static int __init init_kucomms(void)
 
 static void __exit exit_kucomms(void)
 {
-	pr_info("exit_kucomms : Exiting\n");
-
 	device_destroy(cls, MKDEV(major, 0));
 	class_destroy(cls);
 	platform_device_unregister(&kucomms_platform_device);

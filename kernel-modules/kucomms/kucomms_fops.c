@@ -91,14 +91,10 @@ static int kucomms_thread(void *arg)
 	bool stopped = false;
 	struct kucomms_file_data * pfd = (struct kucomms_file_data *)arg;
 
-	pr_info("kucomms_thread : Entered : %lu\n", (unsigned long)pfd->vaddr);
-
 	ok = message_manager_run(
 		&pfd->msgmgr,
 		pfd->vaddr_len/2,
 		&stopped);
-
-	pr_info("kucomms_thread : Exited\n");
 
 	return 0;
 }
@@ -294,7 +290,6 @@ static int kucomms_fops_open(struct inode * inodep, struct file * filp)
 	struct task_struct * thread;
 	bool open;
 
-
 	pcbdata = kucomms_find_and_open(filp->f_path.dentry->d_name.name, filp->f_path.dentry->d_name.len, &open);
 
 	if (pcbdata == 0) {
@@ -349,7 +344,6 @@ static int kucomms_fops_open(struct inode * inodep, struct file * filp)
 //
 static int kucomms_fops_flush(struct file * filp, fl_owner_t id)
 {
-	pr_info("kucomms_fops_flush : Entered\n");
 	return 0;
 }
 
