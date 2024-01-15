@@ -295,6 +295,25 @@ exit:
 bool
 kucomms_char_device_remove(const char* name, __u32 len)
 {
+	const char * basename = "kucomms_";
+
+	if ((name==0) || (len==0)) return false;
+	if (len >= KUCOMMS_FNAME_SIZE) return false;
+	if (len <= strlen(basename)) return false;
+
+	for (__u32 u0=0; u0<strlen(basename); u0++) {
+		if (name[u0] != basename[u0]) return false;
+	}
+
+	for (__u32 u0=0; u0<len; u0++) {
+		if ((name[u0]>='a') && (name[u0]<='z')) continue;
+		if (name[u0]=='_') continue;
+		if ((name[u0]==0x0a) && (u0==(len-1))) break;
+		return false;
+	}
+
+	if (name[len-1]==0x0a) len = len - 1;
+
 	int ret = mutex_lock_interruptible(&cblist_mutex);
 	if (ret == -EINTR) { // Deal with signal
 	}
