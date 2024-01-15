@@ -11,8 +11,6 @@
 
 #define MSGMGR_MSGQARRAY_SIZE 64
 #define MSGMGR_WORK_INTERVAL 8
-#define MSGMGR_TIMER1_INTERVAL 64
-#define MSGMGR_TIMER2_INTERVAL 1024
 
 ///////////////////////////////////////////////////////////////
 
@@ -36,6 +34,7 @@ struct MessageManagerStruct
 	WorkHandler_C			workhlr;
 	TimerHandler_C			timerhlr;
 	void *				userData;
+	__u32				sleep_milli;
 };
 
 ///////////////////////////////////////////////////////////////

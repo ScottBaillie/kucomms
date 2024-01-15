@@ -31,6 +31,8 @@ message_manager_init(
 	pMessageManager->workhlr = workhlr;
 	pMessageManager->timerhlr = timerhlr;
 	pMessageManager->userData = userData;
+//	pMessageManager->sleep_milli = 1000;		// Value can range from 1000 -> 10000.
+	pMessageManager->sleep_milli = 10*1000;
 	for (__u32 u0=0;u0<MSGMGR_MSGQARRAY_SIZE;u0++) {
 		pMessageManager->rx_msgq_array[u0] = 0;
 		pMessageManager->tx_msgq_array[u0] = 0;
@@ -87,6 +89,7 @@ message_manager_run(
 #else
 	time_t now = 0;
 	time_t last_timer_time = time(0);
+	__u32 timer_mod = 1000000 / pMessageManager->sleep_milli;
 #endif
 
 #if KERNEL_BUILD
@@ -146,7 +149,7 @@ message_manager_run(
 				pMessageManager->timerhlr(now, pMessageManager->userData);
 			}
 #else
-			if ((counter%MSGMGR_TIMER1_INTERVAL) == 0) {
+			if ((counter%timer_mod) == 0) {
 				now = time(0);
 				if (now > last_timer_time) {
 					last_timer_time = now;
@@ -171,7 +174,7 @@ message_manager_run(
 			pMessageManager->timerhlr(now, pMessageManager->userData);
 		}
 #else
-		if ((counter%MSGMGR_TIMER2_INTERVAL) == 0) {
+		if ((counter%timer_mod) == 0) {
 			now = time(0);
 			if (now > last_timer_time) {
 				last_timer_time = now;
@@ -183,9 +186,9 @@ message_manager_run(
 		if (ok) continue;
 
 #if KERNEL_BUILD
-		usleep_range(1000,1500);
+		usleep_range(pMessageManager->sleep_milli, pMessageManager->sleep_milli+10);
 #else
-		usleep(1000);
+		usleep(pMessageManager->sleep_milli);
 #endif
 	}
 
