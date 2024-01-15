@@ -21,7 +21,7 @@ typedef bool (*MessageHandler_C)(struct Message * message, MessageQueueHeaderPtr
 // Returning false means sleep, return true means dont sleep.
 typedef bool (*WorkHandler_C)(void * userData);
 
-typedef void (*TimerHandler_C)(void * userData);
+typedef void (*TimerHandler_C)(const __u64 time, void * userData);
 
 ///////////////////////////////////////////////////////////////
 

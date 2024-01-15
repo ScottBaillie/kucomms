@@ -66,7 +66,7 @@ kucomms_test_work_hlr(void * userData)
 /**********************************************************/
 
 static void
-kucomms_test_timer_hlr(void * userData)
+kucomms_test_timer_hlr(const __u64 time, void * userData)
 {
 //	struct kucomms_file_data * pfd = (struct kucomms_file_data *)userData;
 //	struct kucomms_test_data * pdata = (struct kucomms_test_data*)pfd->cbdata.userData;

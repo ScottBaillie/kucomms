@@ -60,7 +60,7 @@ public:
 	{
 	}
 
-	void hlr(std::vector<MessageQueueWriter> & tx_msgq_list);
+	void hlr(const __u64 time, std::vector<MessageQueueWriter> & tx_msgq_list);
 
 private:
 	uint32_t	m_instance = 0;
@@ -107,7 +107,7 @@ TestWorkHandler::hlr(std::vector<MessageQueueWriter> & tx_msgq_list)
 ///////////////////////////////////////////////////////////////
 
 void
-TestTimerHandler::hlr(std::vector<MessageQueueWriter> & tx_msgq_list)
+TestTimerHandler::hlr(const __u64 time, std::vector<MessageQueueWriter> & tx_msgq_list)
 {
 }
 

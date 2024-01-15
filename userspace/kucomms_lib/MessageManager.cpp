@@ -44,11 +44,11 @@ MessageManager_WorkHandler(void * userData)
 ///////////////////////////////////////////////////////////////
 
 void
-MessageManager_TimerHandler(void * userData)
+MessageManager_TimerHandler(const __u64 time, void * userData)
 {
 	MessageManagerUserData * data = (MessageManagerUserData *)userData;
 
-	data->m_timerhlr->hlr(*data->m_tx_msgq);
+	data->m_timerhlr->hlr(time, *data->m_tx_msgq);
 }
 
 ///////////////////////////////////////////////////////////////

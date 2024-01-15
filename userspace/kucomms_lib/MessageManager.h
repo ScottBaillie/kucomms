@@ -42,7 +42,7 @@ class TimerHandler
 public:
 	virtual ~TimerHandler() {}
 
-	virtual void hlr(std::vector<MessageQueueWriter> & tx_msgq_list) = 0;
+	virtual void hlr(const __u64 time, std::vector<MessageQueueWriter> & tx_msgq_list) = 0;
 };
 
 ///////////////////////////////////////////////////////////////

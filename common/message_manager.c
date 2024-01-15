@@ -143,14 +143,14 @@ message_manager_run(
 			now = jiffies_64;
 			if (time_after64(now, last_timer_time+msecs_to_jiffies(1000))) {
 				last_timer_time = now;
-				pMessageManager->timerhlr(pMessageManager->userData);
+				pMessageManager->timerhlr(now, pMessageManager->userData);
 			}
 #else
 			if ((counter%MSGMGR_TIMER1_INTERVAL) == 0) {
 				now = time(0);
 				if (now > last_timer_time) {
 					last_timer_time = now;
-					pMessageManager->timerhlr(pMessageManager->userData);
+					pMessageManager->timerhlr(now, pMessageManager->userData);
 				}
 			}
 #endif
@@ -168,14 +168,14 @@ message_manager_run(
 		now = jiffies_64;
 		if (time_after64(now, last_timer_time+msecs_to_jiffies(1000))) {
 			last_timer_time = now;
-			pMessageManager->timerhlr(pMessageManager->userData);
+			pMessageManager->timerhlr(now, pMessageManager->userData);
 		}
 #else
 		if ((counter%MSGMGR_TIMER2_INTERVAL) == 0) {
 			now = time(0);
 			if (now > last_timer_time) {
 				last_timer_time = now;
-				pMessageManager->timerhlr(pMessageManager->userData);
+				pMessageManager->timerhlr(now, pMessageManager->userData);
 			}
 		}
 #endif

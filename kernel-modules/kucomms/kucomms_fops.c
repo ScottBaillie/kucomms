@@ -77,10 +77,10 @@ kucomms_work_hlr(void * userData)
 /**********************************************************/
 
 void
-kucomms_timer_hlr(void * userData)
+kucomms_timer_hlr(const __u64 time, void * userData)
 {
 	struct kucomms_file_data * pfd = (struct kucomms_file_data *)userData;
-	if (pfd->cbdata.timerhlr) pfd->cbdata.timerhlr(userData);
+	if (pfd->cbdata.timerhlr) pfd->cbdata.timerhlr(time, userData);
 }
 
 /**********************************************************/

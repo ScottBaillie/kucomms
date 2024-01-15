@@ -50,7 +50,7 @@ public:
 	{
 	}
 
-	void hlr(std::vector<MessageQueueWriter> & tx_msgq_list);
+	void hlr(const __u64 time, std::vector<MessageQueueWriter> & tx_msgq_list);
 
 private:
 };
@@ -98,7 +98,7 @@ KuCommsWorkHandler::hlr(std::vector<MessageQueueWriter> & tx_msgq_list)
 ///////////////////////////////////////////////////////////////
 
 void
-KuCommsTimerHandler::hlr(std::vector<MessageQueueWriter> & tx_msgq_list)
+KuCommsTimerHandler::hlr(const __u64 time, std::vector<MessageQueueWriter> & tx_msgq_list)
 {
 }
 
