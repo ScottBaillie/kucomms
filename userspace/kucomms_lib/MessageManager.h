@@ -81,6 +81,17 @@ public:
 		WorkHandler & workhlr,
 		TimerHandler & timerhlr);
 
+	static bool run(
+		void * rx_msgq,
+		const uint64_t rx_msgq_len,
+		void * tx_msgq,
+		const uint64_t tx_msgq_len,
+		const bool init,
+		bool & stopped,
+		MessageHandler & msghlr,
+		WorkHandler & workhlr,
+		TimerHandler & timerhlr);
+
 private:
 	void threadFunction();
 
