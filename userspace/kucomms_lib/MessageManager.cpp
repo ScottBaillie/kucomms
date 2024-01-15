@@ -13,7 +13,7 @@
 ///////////////////////////////////////////////////////////////
 
 bool
-MessageManager_MessageHandler(struct Message * message, MessageQueueHeaderPtr tx_msgq, const __u64 rx_msgq_queueLength, const __u64 tx_msgq_queueLength, void * userData)
+MessageManager_MessageHandler(const struct Message * message, MessageQueueHeaderPtr tx_msgq, const __u64 rx_msgq_queueLength, const __u64 tx_msgq_queueLength, void * userData)
 {
 	MessageManagerUserData * data = (MessageManagerUserData *)userData;
 

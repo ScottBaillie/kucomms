@@ -43,7 +43,7 @@
 /**********************************************************/
 
 bool
-kucomms_message_hlr(struct Message * message, MessageQueueHeaderPtr tx_msgq, const __u64 rx_msgq_queueLength, const __u64 tx_msgq_queueLength, void * userData)
+kucomms_message_hlr(const struct Message * message, MessageQueueHeaderPtr tx_msgq, const __u64 rx_msgq_queueLength, const __u64 tx_msgq_queueLength, void * userData)
 {
 	bool ok = false;
 	__u64 length = message->m_length;

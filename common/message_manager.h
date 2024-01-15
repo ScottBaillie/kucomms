@@ -17,7 +17,7 @@
 //
 // A message handler gets called when a message arrives.
 //
-typedef bool (*MessageHandler_C)(struct Message * message, MessageQueueHeaderPtr tx_msgq, const __u64 rx_msgq_queueLength, const __u64 tx_msgq_queueLength, void * userData);
+typedef bool (*MessageHandler_C)(const struct Message * message, MessageQueueHeaderPtr tx_msgq, const __u64 rx_msgq_queueLength, const __u64 tx_msgq_queueLength, void * userData);
 
 //
 // A work handler should return false if there is no work do.

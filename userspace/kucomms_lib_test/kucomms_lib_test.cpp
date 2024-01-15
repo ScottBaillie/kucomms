@@ -18,7 +18,7 @@ public:
 	{
 	}
 
-	bool hlr(struct Message * message, MessageQueueWriter & tx_msgq, std::vector<MessageQueueWriter> & tx_msgq_list);
+	bool hlr(const struct Message * message, MessageQueueWriter & tx_msgq, std::vector<MessageQueueWriter> & tx_msgq_list);
 
 public:
 	uint32_t	m_messageCount = 0;
@@ -58,7 +58,7 @@ private:
 ///////////////////////////////////////////////////////////////
 
 bool
-KuCommsMessageHandler::hlr(struct Message * message, MessageQueueWriter & tx_msgq, std::vector<MessageQueueWriter> & tx_msgq_list)
+KuCommsMessageHandler::hlr(const struct Message * message, MessageQueueWriter & tx_msgq, std::vector<MessageQueueWriter> & tx_msgq_list)
 {
 	m_messageCount++;
 

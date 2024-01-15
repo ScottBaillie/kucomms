@@ -27,7 +27,7 @@ static struct kucomms_tutorial_data g_data;
 /**********************************************************/
 
 static bool
-kucomms_tutorial_message_hlr(struct Message * message, MessageQueueHeaderPtr tx_msgq, const __u64 rx_msgq_queueLength, const __u64 tx_msgq_queueLength, void * userData)
+kucomms_tutorial_message_hlr(const struct Message * message, MessageQueueHeaderPtr tx_msgq, const __u64 rx_msgq_queueLength, const __u64 tx_msgq_queueLength, void * userData)
 {
 	pr_info("kucomms_tutorial_message_hlr : Entered : message length=%llu\n", message->m_length);
 

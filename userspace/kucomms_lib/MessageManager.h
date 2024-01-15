@@ -22,7 +22,7 @@ class MessageHandler
 public:
 	virtual ~MessageHandler() {}
 
-	virtual bool hlr(struct Message * message, MessageQueueWriter & tx_msgq, std::vector<MessageQueueWriter> & tx_msgq_list) = 0;
+	virtual bool hlr(const struct Message * message, MessageQueueWriter & tx_msgq, std::vector<MessageQueueWriter> & tx_msgq_list) = 0;
 };
 
 ///////////////////////////////////////////////////////////////
