@@ -125,7 +125,7 @@ int main(int argc, char ** argv)
 	KuCommsTimerHandler timerhlr;
 
 	bool ok = MessageManager::run(
-				"/dev/kucomms1",
+				"/dev/kucomms_test",
 				1024*1024,
 				g_stopped,
 				msghlr,
