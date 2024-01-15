@@ -89,13 +89,7 @@ static int __init init_kucomms_test(void)
 
 static void __exit exit_kucomms_test(void)
 {
-	bool ok;
-
-	while (true) {
-		ok = kucomms_unregister(devname, strlen(devname));
-		if (ok) break;
-		usleep_range(1000000,1500000);
-	}
+	kucomms_unregister_wait(devname, strlen(devname));
 
 	pr_info("exit_kucomms_test : Exiting\n");
 }

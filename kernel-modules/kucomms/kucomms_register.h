@@ -62,6 +62,8 @@ kucomms_register(
 
 bool kucomms_unregister(const char* name, __u32 len);
 
+void kucomms_unregister_wait(const char* name, __u32 len);
+
 /**********************************************************/
 
 void kucomms_device_list_init(void);

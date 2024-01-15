@@ -137,7 +137,7 @@ module_exit(exit_kucomms);
 /**********************************************************/
 
 EXPORT_SYMBOL(kucomms_register);
-EXPORT_SYMBOL(kucomms_unregister);
+EXPORT_SYMBOL(kucomms_unregister_wait);
 
 /**********************************************************/
 

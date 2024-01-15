@@ -205,6 +205,20 @@ kucomms_unregister(const char* name, __u32 len)
 
 /**********************************************************/
 
+void
+kucomms_unregister_wait(const char* name, __u32 len)
+{
+	bool ok;
+
+	while (true) {
+		ok = kucomms_unregister(name, len);
+		if (ok) break;
+		usleep_range(1000000,1500000);
+	}
+}
+
+/**********************************************************/
+
 struct kucomms_char_device_data *
 kucomms_find_device_data(const char* name, __u32 len)
 {
