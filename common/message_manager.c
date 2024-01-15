@@ -13,6 +13,7 @@
 #else
 #include <unistd.h>
 #include <stdlib.h>
+#include <time.h>
 #endif
 
 ///////////////////////////////////////////////////////////////
@@ -81,8 +82,11 @@ message_manager_run(
 	__u64 rx_msgq_queueLength;
 	__u64 tx_msgq_queueLength;
 #if KERNEL_BUILD
-	u64 now = 0;
-	u64 last_timer_jiffies = jiffies_64;
+	__u64 now = 0;
+	__u64 last_timer_time = jiffies_64;
+#else
+	time_t now = 0;
+	time_t last_timer_time = time(0);
 #endif
 
 #if KERNEL_BUILD
@@ -137,13 +141,17 @@ message_manager_run(
 
 #if KERNEL_BUILD
 			now = jiffies_64;
-			if (time_after64(now, last_timer_jiffies+msecs_to_jiffies(500))) {
-				last_timer_jiffies = now;
+			if (time_after64(now, last_timer_time+msecs_to_jiffies(1000))) {
+				last_timer_time = now;
 				pMessageManager->timerhlr(pMessageManager->userData);
 			}
 #else
 			if ((counter%MSGMGR_TIMER1_INTERVAL) == 0) {
-				pMessageManager->timerhlr(pMessageManager->userData);
+				now = time(0);
+				if (now > last_timer_time) {
+					last_timer_time = now;
+					pMessageManager->timerhlr(pMessageManager->userData);
+				}
 			}
 #endif
 		}
@@ -158,13 +166,17 @@ message_manager_run(
 
 #if KERNEL_BUILD
 		now = jiffies_64;
-		if (time_after64(now, last_timer_jiffies+msecs_to_jiffies(500))) {
-			last_timer_jiffies = now;
+		if (time_after64(now, last_timer_time+msecs_to_jiffies(1000))) {
+			last_timer_time = now;
 			pMessageManager->timerhlr(pMessageManager->userData);
 		}
 #else
 		if ((counter%MSGMGR_TIMER2_INTERVAL) == 0) {
-			pMessageManager->timerhlr(pMessageManager->userData);
+			now = time(0);
+			if (now > last_timer_time) {
+				last_timer_time = now;
+				pMessageManager->timerhlr(pMessageManager->userData);
+			}
 		}
 #endif
 
