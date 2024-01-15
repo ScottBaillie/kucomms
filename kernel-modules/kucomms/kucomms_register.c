@@ -253,8 +253,11 @@ kucomms_char_device_create(const char* name, __u32 len)
 	for (__u32 u0=0; u0<len; u0++) {
 		if ((name[u0]>='a') && (name[u0]<='z')) continue;
 		if (name[u0]=='_') continue;
+		if ((name[u0]==0x0a) && (u0==(len-1))) break;
 		return false;
 	}
+
+	if (name[len-1]==0x0a) len = len - 1;
 
 	int ret = mutex_lock_interruptible(&cblist_mutex);
 	if (ret == -EINTR) { // Deal with signal
@@ -275,7 +278,8 @@ kucomms_char_device_create(const char* name, __u32 len)
 		device_create(devlist[u0].cls, NULL, MKDEV(devlist[u0].major, 0), NULL, name);
 
 		devlist[u0].filename_len = len;
-		memcpy(devlist[u0].filename, name, len+1);
+		memcpy(devlist[u0].filename, name, len);
+		devlist[u0].filename[len] = 0;
 		mutex_unlock(&cblist_mutex);
 		return true;
 	}
