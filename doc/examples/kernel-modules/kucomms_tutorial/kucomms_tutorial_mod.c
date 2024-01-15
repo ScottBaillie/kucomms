@@ -44,17 +44,6 @@ kucomms_tutorial_message_hlr(struct Message * message, MessageQueueHeaderPtr tx_
 
 /**********************************************************/
 
-//
-// A work handler should return false if there is no work do.
-// A work handler should return true if it knows that there is more work to do.
-// A work handler should return false if it executes very quickly.
-// If a work handler sleeps for more than a millisecond then it should return true.
-// A work handler should not take longer than a millisecond to execute if possible.
-//
-// The work handler is scheduled as often as possible so if it returns true all
-// of the time and there is no sleeping then a lot of CPU will be used.
-// A sleep for a millisecond will occur when the work handler returns false.
-//
 static bool
 kucomms_tutorial_work_hlr(void * userData)
 {
