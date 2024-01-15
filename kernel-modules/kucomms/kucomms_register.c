@@ -268,18 +268,21 @@ kucomms_char_device_create(const char* name, __u32 len)
 	for (__u32 u0=0; u0<KUCOMMS_DEVLIST_SIZE; u0++) {
 		if (devlist[u0].filename_len != 0) continue;
 
-		devlist[u0].major = register_chrdev(0, name, &kucomms_file_operations);
-
-		if (devlist[u0].major < 0) {
-			goto exit;
-		}
-
-		devlist[u0].cls = class_create(name);
-		device_create(devlist[u0].cls, NULL, MKDEV(devlist[u0].major, 0), NULL, name);
-
 		devlist[u0].filename_len = len;
 		memcpy(devlist[u0].filename, name, len);
 		devlist[u0].filename[len] = 0;
+
+		devlist[u0].major = register_chrdev(0, devlist[u0].filename, &kucomms_file_operations);
+
+		if (devlist[u0].major < 0) {
+			devlist[u0].major = 0;
+			devlist[u0].filename_len = 0;
+			goto exit;
+		}
+
+		devlist[u0].cls = class_create(devlist[u0].filename);
+		device_create(devlist[u0].cls, NULL, MKDEV(devlist[u0].major, 0), NULL, devlist[u0].filename);
+
 		mutex_unlock(&cblist_mutex);
 		return true;
 	}
