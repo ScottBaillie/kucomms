@@ -57,6 +57,8 @@ __u64 message_get_message_length(const __u64 dataLength);
 
 __u64 message_get_data_length(const __u64 messageLength);
 
+__u8 * message_get_data_pointer(struct Message * message);
+
 ///////////////////////////////////////////////////////////////
 
 bool message_queue_init(
