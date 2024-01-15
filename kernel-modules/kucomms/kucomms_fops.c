@@ -101,72 +101,6 @@ static int kucomms_thread(void *arg)
 
 /**********************************************************/
 
-static loff_t kucomms_fops_llseek(struct file *, loff_t, int)
-{
-	pr_info("kucomms_fops_llseek : Entered\n");
-	return 0;
-}
-
-static ssize_t kucomms_fops_read(struct file *, char __user *, size_t, loff_t *)
-{
-	pr_info("kucomms_fops_read : Entered\n");
-	return 0;
-}
-
-static ssize_t kucomms_fops_write(struct file *, const char __user *, size_t, loff_t *)
-{
-	pr_info("kucomms_fops_write : Entered\n");
-	return 0;
-}
-
-static ssize_t kucomms_fops_read_iter(struct kiocb *, struct iov_iter *)
-{
-	pr_info("kucomms_fops_read_iter : Entered\n");
-	return 0;
-}
-
-static ssize_t kucomms_fops_write_iter(struct kiocb *, struct iov_iter *)
-{
-	pr_info("kucomms_fops_write_iter : Entered\n");
-	return 0;
-}
-
-static int kucomms_fops_iopoll(struct kiocb *kiocb, struct io_comp_batch *,unsigned int flags)
-{
-	pr_info("kucomms_fops_iopoll : Entered\n");
-	return 0;
-}
-
-//static int kucomms_fops_iterate(struct file *, struct dir_context *)
-//{
-//	pr_info("kucomms_fops_iterate : Entered\n");
-//	return 0;
-//}
-
-static int kucomms_fops_iterate_shared(struct file *, struct dir_context *)
-{
-	pr_info("kucomms_fops_iterate_shared : Entered\n");
-	return 0;
-}
-
-static __poll_t kucomms_fops_poll(struct file *, struct poll_table_struct *)
-{
-	pr_info("kucomms_fops_poll : Entered\n");
-	return 0;
-}
-
-static long kucomms_fops_unlocked_ioctl(struct file *, unsigned int, unsigned long)
-{
-	pr_info("kucomms_fops_unlocked_ioctl : Entered\n");
-	return 0;
-}
-
-static long kucomms_fops_compat_ioctl(struct file *, unsigned int, unsigned long)
-{
-	pr_info("kucomms_fops_compat_ioctl : Entered\n");
-	return 0;
-}
-
 ///////////////////////////////////////////////////////////////
 
 #define KUCOMMS_MAX_MEM_ALLOC_SIZE (1024*1024*1024)
@@ -342,14 +276,6 @@ static int kucomms_fops_open(struct inode * inodep, struct file * filp)
 //
 // SAB : this gets called when userspace calls close + unmap
 //
-static int kucomms_fops_flush(struct file * filp, fl_owner_t id)
-{
-	return 0;
-}
-
-//
-// SAB : this gets called when userspace calls close + unmap
-//
 static int kucomms_fops_release(struct inode * inodep, struct file * filp)
 {
 	struct kucomms_file_data * pfd;
@@ -376,151 +302,13 @@ static int kucomms_fops_release(struct inode * inodep, struct file * filp)
 	return 0;
 }
 
-static int kucomms_fops_fsync(struct file *, loff_t, loff_t, int datasync)
-{
-	pr_info("kucomms_fops_fsync : Entered\n");
-	return 0;
-}
-
-static int kucomms_fops_fasync(int, struct file *, int)
-{
-	pr_info("kucomms_fops_fasync : Entered\n");
-	return 0;
-}
-
-static int kucomms_fops_lock(struct file *, int, struct file_lock *)
-{
-	pr_info("kucomms_fops_lock : Entered\n");
-	return 0;
-}
-
-//static ssize_t kucomms_fops_sendpage(struct file *, struct page *, int, size_t, loff_t *, int)
-//{
-//	pr_info("kucomms_fops_sendpage : Entered\n");
-//	return 0;
-//}
-
-//
-// SAB : this gets called when userspace calls open + mmap
-// This task is normally performed by the memory management code;
-// this method exists to allow drivers to enforce any alignment requirements a particular device may have.
-// Most drivers can leave this method NULL. 
-//
-#if 0
-static unsigned long kucomms_fops_get_unmapped_area(struct file *, unsigned long, unsigned long, unsigned long, unsigned long)
-{
-	pr_info("kucomms_fops_get_unmapped_area : Entered\n");
-	return 0;
-}
-#endif
-
-static int kucomms_fops_check_flags(int)
-{
-	pr_info("kucomms_fops_check_flags : Entered\n");
-	return 0;
-}
-
-static int kucomms_fops_flock(struct file *, int, struct file_lock *)
-{
-	pr_info("kucomms_fops_flock  : Entered\n");
-	return 0;
-}
-
-static ssize_t kucomms_fops_splice_write(struct pipe_inode_info *, struct file *, loff_t *, size_t, unsigned int)
-{
-	pr_info("kucomms_fops_splice_write : Entered\n");
-	return 0;
-}
-
-static ssize_t kucomms_fops_splice_read(struct file *, loff_t *, struct pipe_inode_info *, size_t, unsigned int)
-{
-	pr_info("kucomms_fops_splice_read : Entered\n");
-	return 0;
-}
-
-static int kucomms_fops_setlease(struct file *, int, struct file_lock **, void **)
-{
-	pr_info("kucomms_fops_setlease : Entered\n");
-	return 0;
-}
-
-static long kucomms_fops_fallocate(struct file *file, int mode, loff_t offset,loff_t len)
-{
-	pr_info("kucomms_fops_fallocate : Entered\n");
-	return 0;
-}
-
-static void kucomms_fops_show_fdinfo(struct seq_file *m, struct file *f)
-{
-	pr_info("kucomms_fops_show_fdinfo : Entered\n");
-}
-
-static ssize_t kucomms_fops_copy_file_range(struct file *, loff_t, struct file *,loff_t, size_t, unsigned int)
-{
-	pr_info("kucomms_fops_copy_file_range : Entered\n");
-	return 0;
-}
-
-static loff_t kucomms_fops_remap_file_range(struct file *file_in, loff_t pos_in,struct file *file_out, loff_t pos_out,loff_t len, unsigned int remap_flags)
-{
-	pr_info("kucomms_fops_remap_file_range : Entered\n");
-	return 0;
-}
-
-static int kucomms_fops_fadvise(struct file *, loff_t, loff_t, int)
-{
-	pr_info("kucomms_fops_fadvise : Entered\n");
-	return 0;
-}
-
-static int kucomms_fops_uring_cmd(struct io_uring_cmd *ioucmd, unsigned int issue_flags)
-{
-	pr_info("kucomms_fops_uring_cmd : Entered\n");
-	return 0;
-}
-
-static int kucomms_fops_uring_cmd_iopoll(struct io_uring_cmd *, struct io_comp_batch *,unsigned int poll_flags)
-{
-	pr_info("kucomms_fops_uring_cmd_iopoll : Entered\n");
-	return 0;
-}
-
 /**********************************************************/
 
 struct file_operations kucomms_file_operations =
 {
-	.llseek			= kucomms_fops_llseek,
-	.read			= kucomms_fops_read,
-	.write			= kucomms_fops_write,
-	.read_iter		= kucomms_fops_read_iter,
-	.write_iter		= kucomms_fops_write_iter,
-	.iopoll			= kucomms_fops_iopoll,
-//	.iterate		= kucomms_fops_iterate,
-	.iterate_shared		= kucomms_fops_iterate_shared,
-	.poll			= kucomms_fops_poll,
-	.unlocked_ioctl		= kucomms_fops_unlocked_ioctl,
-	.compat_ioctl		= kucomms_fops_compat_ioctl,
 	.mmap			= kucomms_fops_mmap,
 	.open			= kucomms_fops_open,
-	.flush			= kucomms_fops_flush,
 	.release		= kucomms_fops_release,
-	.fsync			= kucomms_fops_fsync,
-	.fasync			= kucomms_fops_fasync,
-	.lock			= kucomms_fops_lock,
-//	.sendpage		= kucomms_fops_sendpage,
-//	.get_unmapped_area	= kucomms_fops_get_unmapped_area,
-	.check_flags		= kucomms_fops_check_flags,
-	.flock			= kucomms_fops_flock,
-	.splice_write		= kucomms_fops_splice_write,
-	.splice_read		= kucomms_fops_splice_read,
-	.setlease		= kucomms_fops_setlease,
-	.fallocate		= kucomms_fops_fallocate,
-	.show_fdinfo		= kucomms_fops_show_fdinfo,
-	.copy_file_range	= kucomms_fops_copy_file_range,
-	.remap_file_range	= kucomms_fops_remap_file_range,
-	.fadvise		= kucomms_fops_fadvise,
-	.uring_cmd		= kucomms_fops_uring_cmd,
-	.uring_cmd_iopoll	= kucomms_fops_uring_cmd_iopoll,
 };
 
 /**********************************************************/
