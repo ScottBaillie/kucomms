@@ -80,6 +80,10 @@ message_manager_run(
 	__u64 counter = 0;
 	__u64 rx_msgq_queueLength;
 	__u64 tx_msgq_queueLength;
+#if KERNEL_BUILD
+	u64 now = 0;
+	u64 last_timer_jiffies = jiffies_64;
+#endif
 
 #if KERNEL_BUILD
 	buffer = vmalloc(bufferLen);
@@ -131,9 +135,17 @@ message_manager_run(
 				ok = pMessageManager->workhlr(pMessageManager->userData);
 			}
 
+#if KERNEL_BUILD
+			now = jiffies_64;
+			if (time_after64(now, last_timer_jiffies+msecs_to_jiffies(500))) {
+				last_timer_jiffies = now;
+				pMessageManager->timerhlr(pMessageManager->userData);
+			}
+#else
 			if ((counter%MSGMGR_TIMER1_INTERVAL) == 0) {
 				pMessageManager->timerhlr(pMessageManager->userData);
 			}
+#endif
 		}
 
 		if (error) break;
@@ -144,9 +156,17 @@ message_manager_run(
 
 		counter += 1;
 
+#if KERNEL_BUILD
+		now = jiffies_64;
+		if (time_after64(now, last_timer_jiffies+msecs_to_jiffies(500))) {
+			last_timer_jiffies = now;
+			pMessageManager->timerhlr(pMessageManager->userData);
+		}
+#else
 		if ((counter%MSGMGR_TIMER2_INTERVAL) == 0) {
 			pMessageManager->timerhlr(pMessageManager->userData);
 		}
+#endif
 
 		if (ok) continue;
 

@@ -10,8 +10,8 @@
 ///////////////////////////////////////////////////////////////
 
 #define MSGMGR_MSGQARRAY_SIZE 64
-#define MSGMGR_WORK_INTERVAL 32
-#define MSGMGR_TIMER1_INTERVAL 1024
+#define MSGMGR_WORK_INTERVAL 8
+#define MSGMGR_TIMER1_INTERVAL 64
 #define MSGMGR_TIMER2_INTERVAL 1024
 
 ///////////////////////////////////////////////////////////////
