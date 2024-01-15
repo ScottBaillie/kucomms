@@ -240,12 +240,26 @@ kucomms_device_list_init(void)
 bool
 kucomms_char_device_create(const char* name, __u32 len)
 {
+	const char * basename = "kucomms_";
+
+	if ((name==0) || (len==0)) return false;
+	if (len >= KUCOMMS_FNAME_SIZE) return false;
+	if (len <= strlen(basename)) return false;
+
+	for (__u32 u0=0; u0<strlen(basename); u0++) {
+		if (name[u0] != basename[u0]) return false;
+	}
+
+	for (__u32 u0=0; u0<len; u0++) {
+		if ((name[u0]>='a') && (name[u0]<='z')) continue;
+		if (name[u0]=='_') continue;
+		return false;
+	}
+
 	int ret = mutex_lock_interruptible(&cblist_mutex);
 	if (ret == -EINTR) { // Deal with signal
 	}
 
-	if (len >= KUCOMMS_FNAME_SIZE) goto exit;
-	if ((name==0) || (len==0)) goto exit;
 	if (kucomms_find_device_data(name,len)!=0) goto exit;
 
 	for (__u32 u0=0; u0<KUCOMMS_DEVLIST_SIZE; u0++) {
