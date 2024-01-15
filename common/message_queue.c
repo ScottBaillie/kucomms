@@ -173,12 +173,12 @@ message_queue_get_complete(
 ///////////////////////////////////////////////////////////////
 
 __u64
-message_queue_get_avail_l(
+message_queue_get_avail_l_base(
 	struct MessageQueueHeader * pMessageQueueHeader,
-	const __u64 queueLength)
+	const __u64 queueLength,
+	const __u64 rd,
+	const __u64 wr)
 {
-	const __u64 rd = pMessageQueueHeader->m_rd;
-	const __u64 wr = pMessageQueueHeader->m_wr;
 	if (rd >= queueLength) return(0);
 	if (wr >= queueLength) return(0);
 	if (rd == wr) return(0);
@@ -186,14 +186,36 @@ message_queue_get_avail_l(
 	return(queueLength + wr - rd);
 }
 
+__u64
+message_queue_get_avail_l(
+	struct MessageQueueHeader * pMessageQueueHeader,
+	const __u64 queueLength)
+{
+	const __u64 rd = pMessageQueueHeader->m_rd;
+	const __u64 wr = pMessageQueueHeader->m_wr;
+	return(message_queue_get_avail_l_base(pMessageQueueHeader,queueLength,rd,wr));
+}
+
 ///////////////////////////////////////////////////////////////
+
+__u64
+message_queue_get_free_l_base(
+	struct MessageQueueHeader * pMessageQueueHeader,
+	const __u64 queueLength,
+	const __u64 rd,
+	const __u64 wr)
+{
+	return(queueLength - 1 - message_queue_get_avail_l_base(pMessageQueueHeader,queueLength,rd,wr));
+}
 
 __u64
 message_queue_get_free_l(
 	struct MessageQueueHeader * pMessageQueueHeader,
 	const __u64 queueLength)
 {
-	return(queueLength - 1 - message_queue_get_avail_l(pMessageQueueHeader,queueLength));
+	const __u64 rd = pMessageQueueHeader->m_rd;
+	const __u64 wr = pMessageQueueHeader->m_wr;
+	return(message_queue_get_free_l_base(pMessageQueueHeader,queueLength,rd,wr));
 }
 
 ///////////////////////////////////////////////////////////////
@@ -208,13 +230,14 @@ message_queue_add_l(
 	__u8 * dst;
 	__u8 * base;
 	const __u64 messageSize = message->m_length + sizeof(struct Message);
-	__u64 wr;
 
-	if (messageSize > message_queue_get_free_l(pMessageQueueHeader,queueLength)) {
+	const __u64 rd = pMessageQueueHeader->m_rd;
+	__u64 wr = pMessageQueueHeader->m_wr;
+
+	if (messageSize > message_queue_get_free_l_base(pMessageQueueHeader,queueLength,rd,wr)) {
 		return false;
 	}
 
-	wr = pMessageQueueHeader->m_wr;
 	if (wr >= queueLength) return false;
 	headSize = queueLength - wr;
 	dst = &pMessageQueueHeader->m_queue[wr];
@@ -245,13 +268,14 @@ message_queue_add_begin_l(
 	__u64 headSize;
 	__u8 * dst;
 	const __u64 messageSize = dataLength + sizeof(struct Message);
-	__u64 wr;
 
-	if (messageSize > message_queue_get_free_l(pMessageQueueHeader,queueLength)) {
+	const __u64 rd = pMessageQueueHeader->m_rd;
+	__u64 wr = pMessageQueueHeader->m_wr;
+
+	if (messageSize > message_queue_get_free_l_base(pMessageQueueHeader,queueLength,rd,wr)) {
 		return false;
 	}
 
-	wr = pMessageQueueHeader->m_wr;
 	if (wr >= queueLength) return false;
 	headSize = queueLength - wr;
 	dst = &pMessageQueueHeader->m_queue[wr];

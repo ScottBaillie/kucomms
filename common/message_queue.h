@@ -124,9 +124,21 @@ void message_queue_get_complete(
 
 ///////////////////////////////////////////////////////////////
 
+__u64 message_queue_get_avail_l_base(
+	struct MessageQueueHeader * pMessageQueueHeader,
+	const __u64 queueLength,
+	const __u64 rd,
+	const __u64 wr);
+
 __u64 message_queue_get_avail_l(
 	struct MessageQueueHeader * pMessageQueueHeader,
 	const __u64 queueLength);
+
+__u64 message_queue_get_free_l_base(
+	struct MessageQueueHeader * pMessageQueueHeader,
+	const __u64 queueLength,
+	const __u64 rd,
+	const __u64 wr);
 
 __u64 message_queue_get_free_l(
 	struct MessageQueueHeader * pMessageQueueHeader,
