@@ -1,6 +1,7 @@
 /**********************************************************/
 
 #include "kucomms_register.h"
+#include "kucomms_fops.h"
 
 #include <linux/device.h>
 #include <linux/kthread.h>
@@ -10,6 +11,7 @@
 #include <linux/delay.h>
 #include <linux/mm.h>
 #include <linux/mutex.h>
+#include <linux/cdev.h>
 
 //#include <linux/errno.h>
 //#include <linux/mmdebug.h>
@@ -43,10 +45,13 @@
 /**********************************************************/
 
 #define KUCOMMS_CBLIST_SIZE 16
+#define KUCOMMS_DEVLIST_SIZE 16
 
 /**********************************************************/
 
 static struct kucomms_callback_data cblist[KUCOMMS_CBLIST_SIZE];
+
+static struct kucomms_char_device_data devlist[KUCOMMS_DEVLIST_SIZE];
 
 struct mutex cblist_mutex;
 
@@ -129,6 +134,10 @@ kucomms_find_and_close(const char* name, __u32 len)
 
 /**********************************************************/
 
+struct kucomms_char_device_data * kucomms_find_device_data(const char* name, __u32 len);
+
+/**********************************************************/
+
 bool
 kucomms_register(
 	const char* name,
@@ -142,9 +151,11 @@ kucomms_register(
 	if (ret == -EINTR) { // Deal with signal
 	}
 
+	if (len >= KUCOMMS_FNAME_SIZE) goto exit;
 	if ((name==0) || (len==0)) goto exit;
 	if ((msghlr==0) || (workhlr==0) || (timerhlr==0)) goto exit;
 	if (kucomms_find_callback_data(name,len)!=0) goto exit;
+	if (kucomms_find_device_data(name,len)==0) goto exit;
 
 	for (__u32 u0=0; u0<KUCOMMS_CBLIST_SIZE; u0++) {
 		if (cblist[u0].filename_len != 0) continue;
@@ -152,7 +163,6 @@ kucomms_register(
 		cblist[u0].workhlr = workhlr;
 		cblist[u0].timerhlr = timerhlr;
 		cblist[u0].userData = userData;
-		if (len > KUCOMMS_FNAME_SIZE) len = KUCOMMS_FNAME_SIZE;
 		cblist[u0].filename_len = len;
 		memcpy(cblist[u0].filename, name, len);
 		mutex_unlock(&cblist_mutex);
@@ -189,6 +199,121 @@ kucomms_unregister(const char* name, __u32 len)
 	}
 
 	mutex_unlock(&cblist_mutex);
+
+	return true;
+}
+
+/**********************************************************/
+
+struct kucomms_char_device_data *
+kucomms_find_device_data(const char* name, __u32 len)
+{
+	__u32 u1;
+
+	if ((name==0) || (len==0)) return 0;
+	for (__u32 u0=0; u0<KUCOMMS_DEVLIST_SIZE; u0++) {
+		if (devlist[u0].filename_len == 0) continue;
+		if (devlist[u0].filename_len != len) continue;
+		for (u1=0; u1<len; u1++) {
+			if (devlist[u0].filename[u1] != name[u1]) break;
+		}
+		if (u1 != len) continue;
+		return &devlist[u0];
+	}
+	return 0;
+}
+
+/**********************************************************/
+
+void
+kucomms_device_list_init(void)
+{
+	for (__u32 u0=0; u0<KUCOMMS_DEVLIST_SIZE; u0++) {
+		devlist[u0].major = 0;
+		devlist[u0].cls = 0;
+		devlist[u0].filename_len = 0;
+	}
+}
+
+/**********************************************************/
+
+bool
+kucomms_char_device_create(const char* name, __u32 len)
+{
+	int ret = mutex_lock_interruptible(&cblist_mutex);
+	if (ret == -EINTR) { // Deal with signal
+	}
+
+	if (len >= KUCOMMS_FNAME_SIZE) goto exit;
+	if ((name==0) || (len==0)) goto exit;
+	if (kucomms_find_device_data(name,len)!=0) goto exit;
+
+	for (__u32 u0=0; u0<KUCOMMS_DEVLIST_SIZE; u0++) {
+		if (devlist[u0].filename_len != 0) continue;
+
+		devlist[u0].major = register_chrdev(0, name, &kucomms_file_operations);
+
+		if (devlist[u0].major < 0) {
+			goto exit;
+		}
+
+		devlist[u0].cls = class_create(name);
+		device_create(devlist[u0].cls, NULL, MKDEV(devlist[u0].major, 0), NULL, name);
+
+		devlist[u0].filename_len = len;
+		memcpy(devlist[u0].filename, name, len+1);
+		mutex_unlock(&cblist_mutex);
+		return true;
+	}
+
+exit:
+	mutex_unlock(&cblist_mutex);
+
+	return false;
+}
+
+/**********************************************************/
+
+bool
+kucomms_char_device_remove(const char* name, __u32 len)
+{
+	int ret = mutex_lock_interruptible(&cblist_mutex);
+	if (ret == -EINTR) { // Deal with signal
+	}
+	struct kucomms_char_device_data * pdevdata = 0;
+
+	if (kucomms_find_callback_data(name,len)!=0) goto exit;
+
+	pdevdata = kucomms_find_device_data(name, len);
+
+	if (pdevdata) {
+		device_destroy(pdevdata->cls, MKDEV(pdevdata->major, 0));
+		class_destroy(pdevdata->cls);
+		unregister_chrdev(pdevdata->major, pdevdata->filename);
+
+		pdevdata->major = 0;
+		pdevdata->cls = 0;
+		pdevdata->filename_len = 0;
+	}
+
+exit:
+	mutex_unlock(&cblist_mutex);
+
+	return (pdevdata!=0);
+}
+
+/**********************************************************/
+
+bool
+kucomms_char_device_remove_all(void)
+{
+	for (__u32 u0=0; u0<KUCOMMS_DEVLIST_SIZE; u0++) {
+		if (devlist[u0].filename_len == 0) continue;
+
+		device_destroy(devlist[u0].cls, MKDEV(devlist[u0].major, 0));
+		class_destroy(devlist[u0].cls);
+		unregister_chrdev(devlist[u0].major, devlist[u0].filename);
+	}
 
 	return true;
 }

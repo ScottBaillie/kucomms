@@ -35,6 +35,16 @@ struct kucomms_file_data
 
 /**********************************************************/
 
+struct kucomms_char_device_data
+{
+	int major;
+	struct class *cls;
+	char filename[KUCOMMS_FNAME_SIZE];
+	__u32 filename_len;
+};
+
+/**********************************************************/
+
 void kucomms_callback_list_init(void);
 
 struct kucomms_callback_data * kucomms_find_and_open(const char* name, __u32 len, bool * open);
@@ -51,5 +61,15 @@ kucomms_register(
 	void * userData);
 
 bool kucomms_unregister(const char* name, __u32 len);
+
+/**********************************************************/
+
+void kucomms_device_list_init(void);
+
+bool kucomms_char_device_create(const char* name, __u32 len);
+
+bool kucomms_char_device_remove(const char* name, __u32 len);
+
+bool kucomms_char_device_remove_all(void);
 
 /**********************************************************/
