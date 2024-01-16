@@ -1,4 +1,6 @@
 
+PROJECT_NAME=tutorial
+
 PWD := $(shell pwd)
 
 TOP_DIR=$(PWD)/../../../..
@@ -11,10 +13,10 @@ KMOD_KUCOMMS_DIR=$(KMOD_DIR)/kucomms
 
 all:
 	g++ -c -I$(PWD) -I$(COMMON_DIR) -I$(USPACE_LIB_DIR) *.cpp
-	g++ -o kucomms_lib_tutorial *.o $(USPACE_LIB_DIR)/*.o
+	g++ -o kucomms_lib_$(PROJECT_NAME) *.o $(USPACE_LIB_DIR)/*.o
 
 clean:
 	rm -f *.o
-	rm -f kucomms_lib_tutorial
+	rm -f kucomms_lib_$(PROJECT_NAME)
 
  

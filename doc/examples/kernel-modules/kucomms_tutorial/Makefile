@@ -1,4 +1,6 @@
 
+PROJECT_NAME=tutorial
+
 PWD := $(shell pwd)
 
 TOP_DIR=$(PWD)/../../../..
@@ -12,8 +14,8 @@ IDIR=/lib/modules/$(shell uname -r)/kernel/drivers/char/
 
 KBUILD_EXTRA_SYMBOLS=$(src)/../../../../kernel-modules/kucomms/Module.symvers
 
-obj-m += kucomms_tutorial.o
-kucomms_tutorial-objs := kucomms_tutorial_mod.o message_queue.o
+obj-m += kucomms_$(PROJECT_NAME).o
+kucomms_$(PROJECT_NAME)-objs := kucomms_$(PROJECT_NAME)_mod.o message_queue.o
 
 all:
 	cp $(COMMON_DIR)/message_queue.c .
@@ -24,6 +26,6 @@ clean:
 	rm -f message_queue.c
 
 install:
-	install -v -m 644 kucomms_tutorial.ko $(IDIR)
+	install -v -m 644 kucomms_$(PROJECT_NAME).ko $(IDIR)
 	depmod -a
 
