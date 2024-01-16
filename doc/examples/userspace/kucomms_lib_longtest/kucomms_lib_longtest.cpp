@@ -1,6 +1,10 @@
 ///////////////////////////////////////////////////////////////
 
+#include <cstdlib>
 #include <iostream>
+#include <map>
+#include <cstring>
+
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/mman.h>
@@ -57,17 +61,84 @@ private:
 
 ///////////////////////////////////////////////////////////////
 
+__u64 g_sequence_wr = 0;
+__u64 g_sequence_rd = 0;
+
+std::map<__u64, std::vector<__u8> > g_id_to_message;
+
+__u64 g_message_sent_count_0 = 0;
+__u64 g_message_sent_count_1 = 0;
+__u64 g_message_received_count_0 = 0;
+__u64 g_message_received_count_1 = 0;
+__u64 g_message_error_count = 0;
+
+__u64 g_timer_counter = 0;
+
+///////////////////////////////////////////////////////////////
+
 bool
 KuCommsMessageHandler::hlr(const struct Message * message, MessageQueueWriter & tx_msgq, std::vector<MessageQueueWriter> & tx_msgq_list)
 {
+	if (message->m_type == 1) {
+		g_message_received_count_1++;
+		tx_msgq.add(message);
+		g_message_sent_count_1++;
+		return true;
+	}
+	g_message_received_count_0++;
+
+	if (message->m_id != g_sequence_rd) {
+		g_message_error_count++;
+		return true;
+	}
+
+	std::vector<__u8> & msgbuf = g_id_to_message[g_sequence_rd];
+
+	if (msgbuf.size() != message_get_message_length(message->m_length)) {
+		g_message_error_count++;
+		return true;
+	}
+
+	if (memcmp(msgbuf.data(),message,msgbuf.size()) != 0) {
+		g_message_error_count++;
+		return true;
+	}
+
+	g_id_to_message.erase(g_sequence_rd);
+
+	g_sequence_rd++;
+
 	return true;
 }
 
 ///////////////////////////////////////////////////////////////
 
+void
+format_message(DataMessage & msg, const __u64 id)
+{
+	msg.get()->m_type = 0;
+	msg.get()->m_id = id;
+	msg.get()->m_userValue = 0;
+	for (__u32 u0=0; u0<msg.get_data_length(); u0++) msg.get_data()[u0] = rand() % 256;
+}
+
 bool
 KuCommsWorkHandler::hlr(std::vector<MessageQueueWriter> & tx_msgq_list)
 {
+	for (__u32 u0=0; u0<1; u0++) {
+		DataMessage msg(rand() % 256);
+		format_message(msg, g_sequence_wr);
+
+		std::vector<__u8> & msgbuf = g_id_to_message[g_sequence_wr];
+		msgbuf.resize(msg.get_message_length());
+		memcpy(msgbuf.data(), msg.get(), msg.get_message_length());
+
+		tx_msgq_list[0].add(msg.get());
+		g_message_sent_count_0++;
+
+		g_sequence_wr++;
+	}
+
 	return false;
 }
 
@@ -76,6 +147,15 @@ KuCommsWorkHandler::hlr(std::vector<MessageQueueWriter> & tx_msgq_list)
 void
 KuCommsTimerHandler::hlr(const __u64 time, std::vector<MessageQueueWriter> & tx_msgq_list)
 {
+	g_timer_counter++;
+	if ((g_timer_counter%10) == 0) {
+		printf("sent_count_0=%llu : sent_count_1=%llu : received_count_0=%llu : received_count_1=%llu : g_message_error_count=%llu\n",
+			g_message_sent_count_0,
+			g_message_sent_count_1,
+			g_message_received_count_0,
+			g_message_received_count_1,
+			g_message_error_count);
+	}
 }
 
 ///////////////////////////////////////////////////////////////
