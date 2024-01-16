@@ -126,7 +126,7 @@ bool
 KuCommsWorkHandler::hlr(std::vector<MessageQueueWriter> & tx_msgq_list)
 {
 	for (__u32 u0=0; u0<1; u0++) {
-		DataMessage msg(rand() % 256);
+		DataMessage msg(rand() % 2048);
 		format_message(msg, g_sequence_wr);
 
 		std::vector<__u8> & msgbuf = g_id_to_message[g_sequence_wr];

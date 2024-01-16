@@ -31,6 +31,8 @@ bool g_first_message_received = false;
 static bool
 kucomms_message_hlr(const struct Message * message, MessageQueueHeaderPtr tx_msgq, const __u64 rx_msgq_queueLength, const __u64 tx_msgq_queueLength, void * userData)
 {
+	__u64 dataLength;
+
 	g_first_message_received = true;
 
 	if (message->m_type == 0) {
@@ -44,6 +46,20 @@ kucomms_message_hlr(const struct Message * message, MessageQueueHeaderPtr tx_msg
 	if (message->m_id != g_sequence_rd) {
 		g_message_error_count++;
 		return true;
+	}
+
+	dataLength = g_sequence_rd % 2048;
+
+	if (message->m_length != dataLength) {
+		g_message_error_count++;
+		return true;
+	}
+
+	for (__u32 u0=0; u0<dataLength; u0++) {
+		if (message->m_data[u0] != (g_sequence_rd % 256)) {
+			g_message_error_count++;
+			return true;
+		}
 	}
 
 	g_sequence_rd++;
@@ -65,13 +81,15 @@ kucomms_work_hlr(void * userData)
 	MessageQueueHeaderPtr tx_msgq = pfd->msgmgr.tx_msgq_array[0];
 	__u64 tx_msgq_queueLength = pfd->msgmgr.tx_msgq_len_array[0];
 
-	dataLength = g_sequence_wr % 256;
+	dataLength = g_sequence_wr % 2048;
 	message = vmalloc(message_get_message_length(dataLength));
 
 	message->m_length = dataLength;
 	message->m_type = 1;
 	message->m_id = g_sequence_wr;
 	message->m_userValue = 0;
+
+	for (__u32 u0=0; u0<dataLength; u0++) message->m_data[u0] = g_sequence_wr % 256;
 
 	message_queue_add_l(tx_msgq, tx_msgq_queueLength, message);
 
