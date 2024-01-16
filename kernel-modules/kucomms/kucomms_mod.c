@@ -9,22 +9,17 @@
 #include <linux/module.h>
 #include <linux/printk.h>
 #include <linux/platform_device.h>
+#include <linux/fs.h>
 
 /**********************************************************/
 
-#define KUCOMMS_PLATFORM_DEVICE_NAME "kucomms"
+#define KUCOMMS_DEVICE_NAME "kucomms"
 
 /**********************************************************/
 
 static int major;
 static struct class *cls;
-
-/**********************************************************/
-
-static struct platform_device kucomms_platform_device = {
-	.name = KUCOMMS_PLATFORM_DEVICE_NAME,
-	.id = -1,
-};
+static struct device * dev_module;
 
 /**********************************************************/
 
@@ -80,23 +75,30 @@ static struct device_attribute removedev_device_attribute = {
 
 /**********************************************************/
 
+struct file_operations kucomms_module_file_operations =
+{
+	.open			= 0,
+	.release		= 0,
+};
+
+/**********************************************************/
+
 static int __init init_kucomms(void)
 {
-	struct device * dev;
 	int ret;
 
-	major = platform_device_register(&kucomms_platform_device);
+	major = register_chrdev(0, KUCOMMS_DEVICE_NAME, &kucomms_module_file_operations);
 
 	if (major < 0) {
 		pr_alert("init_kucomms : Registering char device failed with %d\n", major);
 		return major;
 	}
 
-	cls = class_create(KUCOMMS_PLATFORM_DEVICE_NAME);
-	dev = device_create(cls, NULL, MKDEV(major, 0), NULL, KUCOMMS_PLATFORM_DEVICE_NAME);
+	cls = class_create(KUCOMMS_DEVICE_NAME);
+	dev_module = device_create(cls, NULL, MKDEV(major, 0), NULL, KUCOMMS_DEVICE_NAME);
 
 //	/sys/devices/virtual/kucomms/kucomms/create_device
-	ret = device_create_file(dev, &createdev_device_attribute);
+	ret = device_create_file(dev_module, &createdev_device_attribute);
 
 	if (ret) {
 		pr_alert("init_kucomms : Error from device_create_file()\n");
@@ -104,11 +106,11 @@ static int __init init_kucomms(void)
 	}
 
 //	/sys/devices/virtual/kucomms/kucomms/remove_device
-	ret = device_create_file(dev, &removedev_device_attribute);
+	ret = device_create_file(dev_module, &removedev_device_attribute);
 
 	if (ret) {
 		pr_alert("init_kucomms : Error from device_create_file()\n");
-		device_remove_file(dev, &createdev_device_attribute);
+		device_remove_file(dev_module, &createdev_device_attribute);
 		return -ENODEV;
 	}
 
@@ -122,11 +124,14 @@ static int __init init_kucomms(void)
 
 static void __exit exit_kucomms(void)
 {
-	device_destroy(cls, MKDEV(major, 0));
-	class_destroy(cls);
-	platform_device_unregister(&kucomms_platform_device);
+	device_remove_file(dev_module, &createdev_device_attribute);
+	device_remove_file(dev_module, &removedev_device_attribute);
 
 	kucomms_char_device_remove_all();
+
+	device_destroy(cls, MKDEV(major, 0));
+	class_destroy(cls);
+	unregister_chrdev(major, KUCOMMS_DEVICE_NAME);
 }
 
 /**********************************************************/
