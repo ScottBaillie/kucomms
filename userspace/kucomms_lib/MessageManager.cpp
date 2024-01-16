@@ -15,17 +15,24 @@
 bool
 MessageManager_MessageHandler(const struct Message * message, MessageQueueHeaderPtr tx_msgq, const __u64 rx_msgq_queueLength, const __u64 tx_msgq_queueLength, void * userData)
 {
-	MessageManagerUserData * data = (MessageManagerUserData *)userData;
+	try {
+		MessageManagerUserData * data = (MessageManagerUserData *)userData;
 
-	std::vector<MessageQueueWriter> & mqlist = *data->m_tx_msgq;
+		std::vector<MessageQueueWriter> & mqlist = *data->m_tx_msgq;
 
-	for (uint32_t u0=0; u0<mqlist.size(); u0++) {
-		if (mqlist[u0].get_mq() == tx_msgq) {
-			bool ok = data->m_msghlr->hlr(message, mqlist[u0], mqlist);
-			return ok;
+		for (uint32_t u0=0; u0<mqlist.size(); u0++) {
+			if (mqlist[u0].get_mq() == tx_msgq) {
+				bool ok = data->m_msghlr->hlr(message, mqlist[u0], mqlist);
+				return ok;
+			}
 		}
 	}
-
+	catch (const std::exception & e) {
+		printf("MessageManager_MessageHandler : Exception %s\n", e.what());
+	}
+	catch (...) {
+		printf("MessageManager_MessageHandler : Exception caught in ...\n");
+	}
 	return false;
 }
 
@@ -34,11 +41,18 @@ MessageManager_MessageHandler(const struct Message * message, MessageQueueHeader
 bool
 MessageManager_WorkHandler(void * userData)
 {
-	MessageManagerUserData * data = (MessageManagerUserData *)userData;
-
-	bool ok = data->m_workhlr->hlr(*data->m_tx_msgq);
-
-	return ok;
+	try {
+		MessageManagerUserData * data = (MessageManagerUserData *)userData;
+		bool ok = data->m_workhlr->hlr(*data->m_tx_msgq);
+		return ok;
+	}
+	catch (const std::exception & e) {
+		printf("MessageManager_WorkHandler : Exception %s\n", e.what());
+	}
+	catch (...) {
+		printf("MessageManager_WorkHandler : Exception caught in ...\n");
+	}
+	return false;
 }
 
 ///////////////////////////////////////////////////////////////
@@ -46,9 +60,16 @@ MessageManager_WorkHandler(void * userData)
 void
 MessageManager_TimerHandler(const __u64 time, void * userData)
 {
-	MessageManagerUserData * data = (MessageManagerUserData *)userData;
-
-	data->m_timerhlr->hlr(time, *data->m_tx_msgq);
+	try {
+		MessageManagerUserData * data = (MessageManagerUserData *)userData;
+		data->m_timerhlr->hlr(time, *data->m_tx_msgq);
+	}
+	catch (const std::exception & e) {
+		printf("MessageManager_TimerHandler : Exception %s\n", e.what());
+	}
+	catch (...) {
+		printf("MessageManager_TimerHandler : Exception caught in ...\n");
+	}
 }
 
 ///////////////////////////////////////////////////////////////
