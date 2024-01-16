@@ -105,8 +105,16 @@ terminate_signal_hanlder(int sig)
 
 ///////////////////////////////////////////////////////////////
 
+//
+// kucomms_test /dev/kucomms_test
+//
 int main(int argc, char ** argv)
 {
+	if (argc != 2) {
+		printf("Must specify one device argument ( i.e. /dev/kucomms_myname)\n");
+		return(-1);
+	}
+
 	signal(SIGTERM, terminate_signal_hanlder);
 
 	KuCommsMessageHandler msghlr;
@@ -114,7 +122,7 @@ int main(int argc, char ** argv)
 	KuCommsTimerHandler timerhlr;
 
 	bool ok = MessageManager::run(
-				"/dev/kucomms_test",
+				argv[1],
 				1024*1024,
 				g_stopped,
 				msghlr,
