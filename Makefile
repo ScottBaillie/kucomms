@@ -9,6 +9,7 @@ USPACE_LIB_TEST_DIR=$(USPACE_DIR)/kucomms_lib_test
 KMOD_DIR=$(TOP_DIR)/kernel-modules
 KMOD_KUCOMMS_DIR=$(KMOD_DIR)/kucomms
 KMOD_KUCOMMS_TEST_DIR=$(KMOD_DIR)/kucomms_test
+EXAMPLES_DIR=$(TOP_DIR)/doc/examples
 
 
 all:
@@ -36,4 +37,18 @@ rmmod:
 	rmmod kucomms_test
 	echo kucomms_test > /sys/devices/virtual/kucomms/kucomms/remove_device
 	rmmod kucomms
+
+examples:
+	cd $(EXAMPLES_DIR)/kernel-modules/kucomms_tutorial ; make
+	cd $(EXAMPLES_DIR)/kernel-modules/kucomms_longtest ; make
+	cd $(EXAMPLES_DIR)/userspace/kucomms_lib_tutorial ; make
+	cd $(EXAMPLES_DIR)/userspace/kucomms_lib_longtest ; make
+	cd $(PWD)
+
+examples_clean:
+	cd $(EXAMPLES_DIR)/kernel-modules/kucomms_tutorial ; make clean
+	cd $(EXAMPLES_DIR)/kernel-modules/kucomms_longtest ; make clean
+	cd $(EXAMPLES_DIR)/userspace/kucomms_lib_tutorial ; make clean
+	cd $(EXAMPLES_DIR)/userspace/kucomms_lib_longtest ; make clean
+	cd $(PWD)
 
