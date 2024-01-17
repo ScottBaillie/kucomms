@@ -20,7 +20,8 @@ __u64 g_message_sent_count_0 = 0;
 __u64 g_message_sent_count_1 = 0;
 __u64 g_message_received_count_0 = 0;
 __u64 g_message_received_count_1 = 0;
-__u64 g_message_error_count = 0;
+__u64 g_message_compare_error_count = 0;
+__u64 g_message_add_error_count = 0;
 
 __u64 g_timer_counter = 0;
 
@@ -31,33 +32,36 @@ bool g_first_message_received = false;
 static bool
 kucomms_message_hlr(const struct Message * message, MessageQueueHeaderPtr tx_msgq, const __u64 rx_msgq_queueLength, const __u64 tx_msgq_queueLength, void * userData)
 {
+	struct kucomms_file_data * pfd = (struct kucomms_file_data *)userData;
 	__u64 dataLength;
+	bool ok;
 
 	g_first_message_received = true;
 
 	if (message->m_type == 0) {
 		g_message_received_count_0++;
-		message_queue_add_l(tx_msgq, tx_msgq_queueLength, message);
+		ok = message_queue_add_tx0(pfd, message);
+		if (!ok) g_message_add_error_count++;
 		g_message_sent_count_0++;
 		return true;
 	}
 	g_message_received_count_1++;
 
 	if (message->m_id != g_sequence_rd) {
-		g_message_error_count++;
+		g_message_compare_error_count++;
 		return true;
 	}
 
 	dataLength = g_sequence_rd % 2048;
 
 	if (message->m_length != dataLength) {
-		g_message_error_count++;
+		g_message_compare_error_count++;
 		return true;
 	}
 
 	for (__u32 u0=0; u0<dataLength; u0++) {
 		if (message->m_data[u0] != (g_sequence_rd % 256)) {
-			g_message_error_count++;
+			g_message_compare_error_count++;
 			return true;
 		}
 	}
@@ -75,6 +79,7 @@ kucomms_work_hlr(void * userData)
 	struct kucomms_file_data * pfd = (struct kucomms_file_data *)userData;
 	struct Message * message;
 	__u64 dataLength;
+	bool ok;
 
 	if (!g_first_message_received) return false;
 
@@ -88,7 +93,8 @@ kucomms_work_hlr(void * userData)
 
 	for (__u32 u0=0; u0<dataLength; u0++) message->m_data[u0] = g_sequence_wr % 256;
 
-	message_queue_add_tx0(pfd, message);
+	ok = message_queue_add_tx0(pfd, message);
+	if (!ok) g_message_add_error_count++;
 
 	g_message_sent_count_1++;
 
@@ -104,14 +110,22 @@ kucomms_work_hlr(void * userData)
 static void
 kucomms_timer_hlr(const __u64 time, void * userData)
 {
+	struct kucomms_file_data * pfd = (struct kucomms_file_data *)userData;
+
 	g_timer_counter++;
 	if ((g_timer_counter%10) == 0) {
-		pr_info("sent_count_0=%llu : sent_count_1=%llu : received_count_0=%llu : received_count_1=%llu : g_message_error_count=%llu\n",
+
+		pr_info("avail_tx0=%llu : avail_rx0=%llu : add_error_count=%llu : compare_error_count=%llu\n",
+			message_queue_get_avail_tx0(pfd),
+			message_queue_get_avail_rx0(pfd),
+			g_message_add_error_count,
+			g_message_compare_error_count);
+
+		pr_info("sent_count_0=%llu : sent_count_1=%llu : received_count_0=%llu : received_count_1=%llu\n",
 			g_message_sent_count_0,
 			g_message_sent_count_1,
 			g_message_received_count_0,
-			g_message_received_count_1,
-			g_message_error_count);
+			g_message_received_count_1);
 	}
 }
 

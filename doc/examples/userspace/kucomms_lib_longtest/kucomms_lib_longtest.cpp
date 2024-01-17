@@ -70,7 +70,8 @@ __u64 g_message_sent_count_0 = 0;
 __u64 g_message_sent_count_1 = 0;
 __u64 g_message_received_count_0 = 0;
 __u64 g_message_received_count_1 = 0;
-__u64 g_message_error_count = 0;
+__u64 g_message_compare_error_count = 0;
+__u64 g_message_add_error_count = 0;
 
 __u64 g_timer_counter = 0;
 
@@ -81,26 +82,27 @@ KuCommsMessageHandler::hlr(const struct Message * message, MessageQueueWriter & 
 {
 	if (message->m_type == 1) {
 		g_message_received_count_1++;
-		tx_msgq.add(message);
+		bool ok = tx_msgq.add(message);
+		if (!ok) g_message_add_error_count++;
 		g_message_sent_count_1++;
 		return true;
 	}
 	g_message_received_count_0++;
 
 	if (message->m_id != g_sequence_rd) {
-		g_message_error_count++;
+		g_message_compare_error_count++;
 		return true;
 	}
 
 	std::vector<__u8> & msgbuf = g_id_to_message[g_sequence_rd];
 
 	if (msgbuf.size() != message_get_message_length(message->m_length)) {
-		g_message_error_count++;
+		g_message_compare_error_count++;
 		return true;
 	}
 
 	if (memcmp(msgbuf.data(),message,msgbuf.size()) != 0) {
-		g_message_error_count++;
+		g_message_compare_error_count++;
 		return true;
 	}
 
@@ -125,7 +127,9 @@ format_message(DataMessage & msg, const __u64 id)
 bool
 KuCommsWorkHandler::hlr(std::vector<MessageQueueWriter> & tx_msgq_list)
 {
-	for (__u32 u0=0; u0<1; u0++) {
+	bool ok;
+
+	for (__u32 u0=0; u0<4; u0++) {
 		DataMessage msg(rand() % 2048);
 		format_message(msg, g_sequence_wr);
 
@@ -133,7 +137,8 @@ KuCommsWorkHandler::hlr(std::vector<MessageQueueWriter> & tx_msgq_list)
 		msgbuf.resize(msg.get_message_length());
 		memcpy(msgbuf.data(), msg.get(), msg.get_message_length());
 
-		tx_msgq_list[0].add(msg.get());
+		ok = tx_msgq_list[0].add(msg.get());
+		if (!ok) g_message_add_error_count++;
 		g_message_sent_count_0++;
 
 		g_sequence_wr++;
@@ -149,12 +154,17 @@ KuCommsTimerHandler::hlr(const __u64 time, std::vector<MessageQueueWriter> & tx_
 {
 	g_timer_counter++;
 	if ((g_timer_counter%10) == 0) {
-		printf("sent_count_0=%llu : sent_count_1=%llu : received_count_0=%llu : received_count_1=%llu : g_message_error_count=%llu\n",
+
+		printf("avail_tx0=%llu : add_error_count=%llu : compare_error_count=%llu\n",
+			tx_msgq_list[0].get_avail(),
+			g_message_add_error_count,
+			g_message_compare_error_count);
+
+		printf("sent_count_0=%llu : sent_count_1=%llu : received_count_0=%llu : received_count_1=%llu\n",
 			g_message_sent_count_0,
 			g_message_sent_count_1,
 			g_message_received_count_0,
-			g_message_received_count_1,
-			g_message_error_count);
+			g_message_received_count_1);
 	}
 }
 
