@@ -143,6 +143,11 @@ module_exit(exit_kucomms);
 
 EXPORT_SYMBOL(kucomms_register);
 EXPORT_SYMBOL(kucomms_unregister_wait);
+EXPORT_SYMBOL(message_queue_add_tx0);
+EXPORT_SYMBOL(message_queue_get_avail_tx0);
+EXPORT_SYMBOL(message_queue_get_free_tx0);
+EXPORT_SYMBOL(message_queue_get_avail_rx0);
+EXPORT_SYMBOL(message_queue_get_free_rx0);
 
 /**********************************************************/
 

@@ -78,9 +78,6 @@ kucomms_work_hlr(void * userData)
 
 	if (!g_first_message_received) return false;
 
-	MessageQueueHeaderPtr tx_msgq = pfd->msgmgr.tx_msgq_array[0];
-	__u64 tx_msgq_queueLength = pfd->msgmgr.tx_msgq_len_array[0];
-
 	dataLength = g_sequence_wr % 2048;
 	message = vmalloc(message_get_message_length(dataLength));
 
@@ -91,7 +88,7 @@ kucomms_work_hlr(void * userData)
 
 	for (__u32 u0=0; u0<dataLength; u0++) message->m_data[u0] = g_sequence_wr % 256;
 
-	message_queue_add_l(tx_msgq, tx_msgq_queueLength, message);
+	message_queue_add_tx0(pfd, message);
 
 	g_message_sent_count_1++;
 

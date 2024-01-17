@@ -29,15 +29,12 @@ static struct kucomms_test_data g_data;
 static bool
 kucomms_test_message_hlr(const struct Message * message, MessageQueueHeaderPtr tx_msgq, const __u64 rx_msgq_queueLength, const __u64 tx_msgq_queueLength, void * userData)
 {
-	pr_info("kucomms_test_message_hlr : Entered : message length=%llu\n", message->m_length);
-
-//	struct kucomms_file_data * pfd = (struct kucomms_file_data *)userData;
+	struct kucomms_file_data * pfd = (struct kucomms_file_data *)userData;
 //	struct kucomms_test_data * pdata = (struct kucomms_test_data*)pfd->cbdata.userData;
 
 
 	//  send the message received back to the sender
-	message_queue_add_l(tx_msgq, tx_msgq_queueLength, message);
-
+	message_queue_add_tx0(pfd, message);
 
 	return true;
 }
@@ -48,7 +45,6 @@ static bool
 kucomms_test_work_hlr(void * userData)
 {
 //	struct kucomms_file_data * pfd = (struct kucomms_file_data *)userData;
-//	struct kucomms_test_data * pdata = (struct kucomms_test_data*)pfd->cbdata.userData;
 	return false;
 }
 
@@ -58,7 +54,6 @@ static void
 kucomms_test_timer_hlr(const __u64 time, void * userData)
 {
 //	struct kucomms_file_data * pfd = (struct kucomms_file_data *)userData;
-//	struct kucomms_test_data * pdata = (struct kucomms_test_data*)pfd->cbdata.userData;
 }
 
 /**********************************************************/
@@ -70,7 +65,6 @@ const char * devname = "kucomms_test";
 static int __init init_kucomms_test(void)
 {
 	bool ok;
-	pr_info("init_kucomms_test : Entered\n");
 
 	ok = kucomms_register(
 		devname,
@@ -90,8 +84,6 @@ static int __init init_kucomms_test(void)
 static void __exit exit_kucomms_test(void)
 {
 	kucomms_unregister_wait(devname, strlen(devname));
-
-	pr_info("exit_kucomms_test : Exiting\n");
 }
 
 /**********************************************************/

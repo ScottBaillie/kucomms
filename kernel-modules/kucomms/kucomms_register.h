@@ -75,3 +75,21 @@ bool kucomms_char_device_remove(const char* name, __u32 len);
 bool kucomms_char_device_remove_all(void);
 
 /**********************************************************/
+
+bool message_queue_add_tx0(
+	struct kucomms_file_data * pfd,
+	const struct Message * message);
+
+__u64 message_queue_get_avail_tx0(
+	struct kucomms_file_data * pfd);
+
+__u64 message_queue_get_free_tx0(
+	struct kucomms_file_data * pfd);
+
+__u64 message_queue_get_avail_rx0(
+	struct kucomms_file_data * pfd);
+
+__u64 message_queue_get_free_rx0(
+	struct kucomms_file_data * pfd);
+
+/**********************************************************/

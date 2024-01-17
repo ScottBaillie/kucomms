@@ -373,3 +373,51 @@ kucomms_char_device_remove_all(void)
 }
 
 /**********************************************************/
+
+bool
+message_queue_add_tx0(
+	struct kucomms_file_data * pfd,
+	const struct Message * message)
+{
+	MessageQueueHeaderPtr tx_msgq = pfd->msgmgr.tx_msgq_array[0];
+	__u64 tx_msgq_queueLength = pfd->msgmgr.tx_msgq_len_array[0];
+	return(message_queue_add_l(tx_msgq, tx_msgq_queueLength, message));
+}
+
+__u64
+message_queue_get_avail_tx0(
+	struct kucomms_file_data * pfd)
+{
+	MessageQueueHeaderPtr tx_msgq = pfd->msgmgr.tx_msgq_array[0];
+	__u64 tx_msgq_queueLength = pfd->msgmgr.tx_msgq_len_array[0];
+	return(message_queue_get_avail_l(tx_msgq,tx_msgq_queueLength));
+}
+
+__u64
+message_queue_get_free_tx0(
+	struct kucomms_file_data * pfd)
+{
+	MessageQueueHeaderPtr tx_msgq = pfd->msgmgr.tx_msgq_array[0];
+	__u64 tx_msgq_queueLength = pfd->msgmgr.tx_msgq_len_array[0];
+	return(message_queue_get_free_l(tx_msgq,tx_msgq_queueLength));
+}
+
+__u64
+message_queue_get_avail_rx0(
+	struct kucomms_file_data * pfd)
+{
+	MessageQueueHeaderPtr rx_msgq = pfd->msgmgr.rx_msgq_array[0];
+	__u64 rx_msgq_queueLength = pfd->msgmgr.rx_msgq_len_array[0];
+	return(message_queue_get_avail_l(rx_msgq,rx_msgq_queueLength));
+}
+
+__u64
+message_queue_get_free_rx0(
+	struct kucomms_file_data * pfd)
+{
+	MessageQueueHeaderPtr rx_msgq = pfd->msgmgr.rx_msgq_array[0];
+	__u64 rx_msgq_queueLength = pfd->msgmgr.rx_msgq_len_array[0];
+	return(message_queue_get_free_l(rx_msgq,rx_msgq_queueLength));
+}
+
+/**********************************************************/
