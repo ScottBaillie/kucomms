@@ -2,8 +2,6 @@
 
 #include "MessageQueueWriter.h"
 
-#include <mutex>
-
 ///////////////////////////////////////////////////////////////
 
 bool
@@ -60,14 +58,12 @@ MessageQueueWriter::add(const struct Message * message)
 	return(message_queue_add(this->m_mq, message));
 }
 
-std::mutex g_addMutex;
-
 bool
 MessageQueueWriter::add_locked(const struct Message * message)
 {
 	bool ok;
 	{
-		std::lock_guard<std::mutex> lock(g_addMutex);
+		std::lock_guard<std::mutex> lock(this->m_addMutex);
 		ok = message_queue_add(this->m_mq, message);
 	}
 	return(ok);

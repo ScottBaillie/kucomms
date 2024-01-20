@@ -7,6 +7,8 @@
 
 #include "DataMessage.h"
 
+#include <mutex>
+
 ///////////////////////////////////////////////////////////////
 
 class InitMessage
@@ -63,6 +65,7 @@ public:
 private:
 	MessageQueueHeaderPtr		m_mq = 0;
 	std::vector<__u8>		m_add_buffer;
+	std::mutex			m_addMutex;
 };
 
 ///////////////////////////////////////////////////////////////  
