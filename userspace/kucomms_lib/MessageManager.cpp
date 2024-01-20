@@ -226,11 +226,77 @@ MessageManager::run(
 		tx_msgq_list[0].init((uint8_t*)tx_msgq);
 	}
 
+	bool ok = MessageManager::run(
+			rx_msgq_list,
+			tx_msgq_list,
+			stopped,
+			msghlr,
+			workhlr,
+			timerhlr);
+
+	return ok;
+}
+
+///////////////////////////////////////////////////////////////
+
+bool
+MessageManager::run(
+		void * rx_msgq_1,
+		const uint64_t rx_msgq_len_1,
+		void * tx_msgq_1,
+		const uint64_t tx_msgq_len_1,
+		void * rx_msgq_2,
+		const uint64_t rx_msgq_len_2,
+		void * tx_msgq_2,
+		const uint64_t tx_msgq_len_2,
+		const bool init,
+		bool & stopped,
+		MessageHandler & msghlr,
+		WorkHandler & workhlr,
+		TimerHandler & timerhlr)
+{
+	std::vector<MessageQueueReader> rx_msgq_list(2);
+	std::vector<MessageQueueWriter> tx_msgq_list(2);
+
+	if (init) {
+		rx_msgq_list[0].init((uint8_t*)rx_msgq_1, rx_msgq_len_1);
+		tx_msgq_list[0].init((uint8_t*)tx_msgq_1, tx_msgq_len_1);
+		rx_msgq_list[1].init((uint8_t*)rx_msgq_2, rx_msgq_len_2);
+		tx_msgq_list[1].init((uint8_t*)tx_msgq_2, tx_msgq_len_2);
+	} else {
+		rx_msgq_list[0].init((uint8_t*)rx_msgq_1);
+		tx_msgq_list[0].init((uint8_t*)tx_msgq_1);
+		rx_msgq_list[1].init((uint8_t*)rx_msgq_2);
+		tx_msgq_list[1].init((uint8_t*)tx_msgq_2);
+	}
+
+	bool ok = MessageManager::run(
+			rx_msgq_list,
+			tx_msgq_list,
+			stopped,
+			msghlr,
+			workhlr,
+			timerhlr);
+
+	return ok;
+}
+
+///////////////////////////////////////////////////////////////
+
+bool
+MessageManager::run(
+		std::vector<MessageQueueReader> & rx_msgq_list,
+		std::vector<MessageQueueWriter> & tx_msgq_list,
+		bool & stopped,
+		MessageHandler & msghlr,
+		WorkHandler & workhlr,
+		TimerHandler & timerhlr)
+{
 	MessageManager mmgr(msghlr,workhlr,timerhlr,rx_msgq_list,tx_msgq_list);
 
 	bool ok = mmgr.start();
 	if (!ok) {
-		printf("main : Error from mmgr.start\n");
+		printf("MessageManager::run : Error from mmgr.start\n");
 		return false;
 	}
 

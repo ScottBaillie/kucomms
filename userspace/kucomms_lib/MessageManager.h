@@ -92,6 +92,29 @@ public:
 		WorkHandler & workhlr,
 		TimerHandler & timerhlr);
 
+	static bool run(
+		void * rx_msgq_1,
+		const uint64_t rx_msgq_len_1,
+		void * tx_msgq_1,
+		const uint64_t tx_msgq_len_1,
+		void * rx_msgq_2,
+		const uint64_t rx_msgq_len_2,
+		void * tx_msgq_2,
+		const uint64_t tx_msgq_len_2,
+		const bool init,
+		bool & stopped,
+		MessageHandler & msghlr,
+		WorkHandler & workhlr,
+		TimerHandler & timerhlr);
+
+	static bool run(
+		std::vector<MessageQueueReader> & rx_msgq_list,
+		std::vector<MessageQueueWriter> & tx_msgq_list,
+		bool & stopped,
+		MessageHandler & msghlr,
+		WorkHandler & workhlr,
+		TimerHandler & timerhlr);
+
 private:
 	void threadFunction();
 
