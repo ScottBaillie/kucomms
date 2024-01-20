@@ -82,7 +82,7 @@ KuCommsMessageHandler::hlr(const struct Message * message, MessageQueueWriter & 
 {
 	if (message->m_type == 1) {
 		g_message_received_count_1++;
-		bool ok = tx_msgq.add(message);
+		bool ok = tx_msgq_list[0].add(message);
 		if (!ok) g_message_add_error_count++;
 		g_message_sent_count_1++;
 		return true;
