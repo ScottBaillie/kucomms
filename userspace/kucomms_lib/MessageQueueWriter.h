@@ -40,6 +40,8 @@ public:
 
 	bool add(const struct Message * message);
 
+	bool add_locked(const struct Message * message);
+
 	bool add_begin(
 		struct Message ** pmessage,
 		const __u64 dataLength);

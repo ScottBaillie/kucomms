@@ -80,6 +80,10 @@ bool message_queue_add_tx0(
 	struct kucomms_file_data * pfd,
 	const struct Message * message);
 
+bool message_queue_add_tx0_locked(
+	struct kucomms_file_data * pfd,
+	const struct Message * message);
+
 __u64 message_queue_get_avail_tx0(
 	struct kucomms_file_data * pfd);
 

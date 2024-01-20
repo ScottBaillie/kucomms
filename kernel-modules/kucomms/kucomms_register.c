@@ -55,6 +55,8 @@ static struct kucomms_char_device_data devlist[KUCOMMS_DEVLIST_SIZE];
 
 struct mutex cblist_mutex;
 
+struct mutex add_mutex;
+
 /**********************************************************/
 
 void
@@ -70,6 +72,7 @@ kucomms_callback_list_init(void)
 	}
 
 	mutex_init(&cblist_mutex);
+	mutex_init(&add_mutex);
 }
 
 /**********************************************************/
@@ -382,6 +385,20 @@ message_queue_add_tx0(
 	MessageQueueHeaderPtr tx_msgq = pfd->msgmgr.tx_msgq_array[0];
 	__u64 tx_msgq_queueLength = pfd->msgmgr.tx_msgq_len_array[0];
 	return(message_queue_add_l(tx_msgq, tx_msgq_queueLength, message));
+}
+
+bool
+message_queue_add_tx0_locked(
+	struct kucomms_file_data * pfd,
+	const struct Message * message)
+{
+	bool ok;
+	int ret = mutex_lock_interruptible(&add_mutex);
+	if (ret == -EINTR) { // Deal with signal
+	}
+	ok = message_queue_add_tx0(pfd, message);
+	mutex_unlock(&add_mutex);
+	return(ok);
 }
 
 __u64
