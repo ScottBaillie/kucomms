@@ -5,8 +5,8 @@
 
 ///////////////////////////////////////////////////////////////
 
-#include "MessageQueueWriter.h"
-#include "MessageQueueReader.h"
+#include <kucomms/MessageQueueWriter.h>
+#include <kucomms/MessageQueueReader.h>
 
 #define KERNEL_BUILD 0
 

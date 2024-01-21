@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <signal.h>
 
-#include "MessageManager.h"
+#include <kucomms/MessageManager.h>
 
 ///////////////////////////////////////////////////////////////
 

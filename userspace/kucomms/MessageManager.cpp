@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////
 
-#include "MessageManager.h"
+#include <kucomms/MessageManager.h>
 
 #include <cstdio>
 #include <string>

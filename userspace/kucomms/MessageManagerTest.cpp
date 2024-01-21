@@ -6,7 +6,7 @@
 
 #include <unistd.h>
 
-#include "MessageManager.h"
+#include <kucomms/MessageManager.h>
 
 ///////////////////////////////////////////////////////////////
 

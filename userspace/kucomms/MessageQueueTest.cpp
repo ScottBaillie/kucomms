@@ -3,8 +3,8 @@
 #include <cstdint>
 #include <cstdlib>
 
-#include "MessageQueueReader.h"
-#include "MessageQueueWriter.h"
+#include <kucomms/MessageQueueReader.h>
+#include <kucomms/MessageQueueWriter.h>
 
 ///////////////////////////////////////////////////////////////
 
