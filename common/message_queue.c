@@ -4,26 +4,6 @@
 
 ///////////////////////////////////////////////////////////////
 
-__u64
-message_get_message_length(const __u64 dataLength)
-{
-	return(dataLength + sizeof(struct Message));
-}
-
-__u64
-message_get_data_length(const __u64 messageLength)
-{
-	return(messageLength - sizeof(struct Message));
-}
-
-__u8 *
-message_get_data_pointer(struct Message * message)
-{
-	return(((__u8 *)message) + sizeof(struct Message));
-}
-
-///////////////////////////////////////////////////////////////
-
 bool
 message_queue_init(
 	struct MessageQueueHeader * pMessageQueueHeader,
