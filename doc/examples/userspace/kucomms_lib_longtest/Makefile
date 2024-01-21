@@ -6,7 +6,7 @@ PWD := $(shell pwd)
 TOP_DIR=$(PWD)/../../../..
 COMMON_DIR=$(TOP_DIR)/common
 USPACE_DIR=$(TOP_DIR)/userspace
-USPACE_LIB_DIR=$(USPACE_DIR)/kucomms_lib
+USPACE_LIB_DIR=$(USPACE_DIR)/kucomms
 KMOD_DIR=$(TOP_DIR)/kernel-modules
 KMOD_KUCOMMS_DIR=$(KMOD_DIR)/kucomms
 
