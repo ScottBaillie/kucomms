@@ -1,6 +1,6 @@
 /**********************************************************/
 
-#include "kucomms_register.h"
+#include <kucomms/kucomms_register.h>
 
 #include <linux/cdev.h>
 #include <linux/kernel.h>

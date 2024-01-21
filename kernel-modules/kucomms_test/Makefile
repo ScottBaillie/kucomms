@@ -2,7 +2,7 @@
 PWD := $(shell pwd)
 
 ccflags-y += -I$(src)/../../common
-ccflags-y += -I$(src)/../../kernel-modules/kucomms
+ccflags-y += -I$(src)/../../kernel-modules
 ccflags-y += -I$(src)
 
 IDIR=/lib/modules/$(shell uname -r)/kernel/drivers/char/
