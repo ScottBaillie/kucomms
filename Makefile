@@ -28,6 +28,7 @@ clean:
 	cd $(USPACE_LIB_TEST_DIR) ; make clean; cd ..
 	cd $(KMOD_KUCOMMS_DIR) ; make clean; cd ..
 	cd $(KMOD_KUCOMMS_TEST_DIR) ; make clean; cd ..
+	make examples_clean
 
 install:
 	mkdir -p $(INSTALL_INC_DIR)/kucomms
