@@ -3,17 +3,9 @@ PROJECT_NAME=tutorial
 
 PWD := $(shell pwd)
 
-TOP_DIR=$(PWD)/../../../..
-COMMON_DIR=$(TOP_DIR)/common
-USPACE_DIR=$(TOP_DIR)/userspace
-USPACE_LIB_DIR=$(USPACE_DIR)/kucomms
-KMOD_DIR=$(TOP_DIR)/kernel-modules
-KMOD_KUCOMMS_DIR=$(KMOD_DIR)/kucomms
-
-
 all:
-	g++ -c -I$(PWD) -I$(COMMON_DIR) -I$(USPACE_DIR) *.cpp
-	g++ -o kucomms_lib_$(PROJECT_NAME) *.o $(USPACE_LIB_DIR)/libkucomms.a
+	g++ -c -I$(PWD) *.cpp
+	g++ -o kucomms_lib_$(PROJECT_NAME) *.o -lkucomms
 
 clean:
 	rm -f *.o
