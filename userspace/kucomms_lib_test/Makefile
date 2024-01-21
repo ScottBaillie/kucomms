@@ -11,7 +11,7 @@ KMOD_KUCOMMS_DIR=$(KMOD_DIR)/kucomms
 
 all:
 	g++ -c -I$(PWD) -I$(COMMON_DIR) -I$(USPACE_DIR) *.cpp
-	g++ -o kucomms_lib_test *.o $(USPACE_LIB_DIR)/*.o
+	g++ -o kucomms_lib_test *.o $(USPACE_LIB_DIR)/libkucomms.a
 
 clean:
 	rm -f *.o
