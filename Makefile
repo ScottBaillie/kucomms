@@ -24,19 +24,9 @@ clean:
 	cd $(KMOD_KUCOMMS_DIR) ; make clean; cd ..
 	cd $(KMOD_KUCOMMS_TEST_DIR) ; make clean; cd ..
 
-install:
-	cd $(KMOD_KUCOMMS_DIR) ; make install; cd ..
-	cd $(KMOD_KUCOMMS_TEST_DIR) ; make install; cd ..
-
-insmod:
-	modprobe kucomms
-	echo kucomms_test > /sys/devices/virtual/kucomms/kucomms/create_device
-	modprobe kucomms_test
-
-rmmod:
-	rmmod kucomms_test
-	echo kucomms_test > /sys/devices/virtual/kucomms/kucomms/remove_device
-	rmmod kucomms
+depmod:
+	cd $(KMOD_KUCOMMS_DIR) ; make depmod; cd ..
+	cd $(KMOD_KUCOMMS_TEST_DIR) ; make depmod; cd ..
 
 examples:
 	cd $(EXAMPLES_DIR)/kernel-modules/kucomms_tutorial ; make

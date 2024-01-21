@@ -20,7 +20,7 @@ all:
 clean:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 
-install:
+depmod:
 	install -v -m 644 kucomms_$(PROJECT_NAME).ko $(IDIR)
 	depmod -a
 

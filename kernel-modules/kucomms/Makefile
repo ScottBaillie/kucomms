@@ -23,7 +23,7 @@ clean:
 	rm -f message_manager.c
 	rm -f message_queue.c
 
-install:
+depmod:
 	install -v -m 644 kucomms.ko $(IDIR)
 	depmod -a
 
