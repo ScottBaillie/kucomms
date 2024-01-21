@@ -9,7 +9,7 @@
 #include "MessageQueueReader.h"
 
 extern "C" {
-#include "message_manager.h"
+#include <kucomms/message_manager.h>
 }
 
 #include <memory>

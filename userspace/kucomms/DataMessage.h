@@ -6,7 +6,7 @@
 ///////////////////////////////////////////////////////////////
 
 extern "C" {
-#include "message_queue.h"
+#include <kucomms/message_queue.h>
 }
 
 #include <vector>
