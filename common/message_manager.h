@@ -25,6 +25,7 @@ typedef bool (*MessageHandler_C)(const struct Message * message, MessageQueueHea
 // A work handler should return false if it executes very quickly.
 // If a work handler sleeps for more than the work handler poll period then it should return true.
 // A work handler should execute as quickly as possible.
+// The average execution time of the work handler should not exceed the poll period.
 //
 // The work handler is scheduled as often as possible so if it returns true all
 // of the time and there is no sleeping then a lot of CPU will be used.
