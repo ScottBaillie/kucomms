@@ -46,7 +46,6 @@ uninstall:
 
 depmod:
 	cd $(KMOD_KUCOMMS_DIR) ; make depmod; cd ..
-	cd $(KMOD_KUCOMMS_TEST_DIR) ; make depmod; cd ..
 
 examples:
 	cd $(EXAMPLES_DIR)/kernel-modules/kucomms_tutorial ; make
