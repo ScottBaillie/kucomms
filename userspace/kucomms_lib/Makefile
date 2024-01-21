@@ -14,10 +14,11 @@ all:
 	cp $(COMMON_DIR)/message_queue.c .
 	gcc -c -I$(PWD) -I$(COMMON_DIR) *.c
 	g++ -c -I$(PWD) -I$(COMMON_DIR) *.cpp
+	ar rvs libkucomms.a *.o
 
 clean:
 	rm -f *.o
 	rm -f message_manager.c
 	rm -f message_queue.c
-
+	rm -f libkucomms.a
  
