@@ -8,6 +8,8 @@
 #include "MessageQueueWriter.h"
 #include "MessageQueueReader.h"
 
+#define KERNEL_BUILD 0
+
 extern "C" {
 #include <kucomms/message_manager.h>
 }

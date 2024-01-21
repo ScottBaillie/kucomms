@@ -5,6 +5,8 @@
 
 ///////////////////////////////////////////////////////////////
 
+#define KERNEL_BUILD 0
+
 extern "C" {
 #include <kucomms/message_queue.h>
 }

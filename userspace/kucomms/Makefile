@@ -12,7 +12,7 @@ KMOD_KUCOMMS_DIR=$(KMOD_DIR)/kucomms
 all:
 	cp $(COMMON_DIR)/message_manager.c .
 	cp $(COMMON_DIR)/message_queue.c .
-	gcc -c -I$(PWD) -I$(COMMON_DIR) *.c
+	gcc -c -DKERNEL_BUILD=0 -I$(PWD) -I$(COMMON_DIR) *.c
 	g++ -c -I$(PWD) -I$(COMMON_DIR) *.cpp
 	ar rvs libkucomms.a *.o
 

@@ -7,6 +7,7 @@ COMMON_DIR=$(TOP_DIR)/common
 ccflags-y += -I$(src)/../../common
 ccflags-y += -I$(src)/../../kernel-modules/kucomms
 ccflags-y += -I$(src)
+ccflags-y += -DKERNEL_BUILD=1
 
 IDIR=/lib/modules/$(shell uname -r)/kernel/drivers/char/
 
